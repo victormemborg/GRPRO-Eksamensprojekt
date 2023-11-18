@@ -1,28 +1,28 @@
-import itumulator.executable.DisplayInformation;
+
 import itumulator.executable.Program;
 import itumulator.world.World;
 import itumulator.world.Location;
-import java.awt.Color;
+import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        int size = 3;
+        int size = 5;
         int display_size = 800;
-        int delay = 1000;
+        int delay = 500;
 
         Program p = new Program(size, display_size, delay);
         World world = p.getWorld();
 
-        Person person = new Person();
-        Location place = new Location(0,1);
-        world.setTile(place, person);
-
-        DisplayInformation di = new DisplayInformation(Color.red);
-        p.setDisplayInformation(Person.class, di);
+        Random r = new Random();
+        for (int i = 0 ; i < 10 ; i++) {
+            Location l = new Location(r.nextInt(size), r.nextInt(size));
+            while(!world.isTileEmpty(l)) {
+                l = new Location(r.nextInt(size), r.nextInt(size));
+            }
+            world.setTile(l, new Person(world));
+        }
 
         p.show();
-        for (int i = 0 ; i < 200; i++) {
-            p.simulate();
-        }
+        p.run();
     }
 }
