@@ -12,14 +12,12 @@ import java.awt.Color;
 
 public class Person implements Actor, DynamicDisplayInformationProvider {
     World world;
-
-    public Person(World world) {
-        this.world = world;
-    }
+    boolean isNight = false;
     
     @Override
     public void act(World world) {
-        if(world.isDay() && getEmptyRandomLocations(world) != null) {
+        isNight = world.isNight();
+        if(!isNight && getEmptyRandomLocations(world) != null) {
             world.move(this, getEmptyRandomLocations(world));
         }
     }
@@ -36,7 +34,7 @@ public class Person implements Actor, DynamicDisplayInformationProvider {
     
     @Override
     public DisplayInformation getInformation() {
-        if(world.isNight()) {
+        if(isNight) {
             return new DisplayInformation(Color.blue, "bear-small-sleeping");
         } else {
             return new DisplayInformation(Color.gray, "bear-small");

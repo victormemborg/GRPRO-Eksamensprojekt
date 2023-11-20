@@ -20,7 +20,7 @@ public class Main {
             while(!world.isTileEmpty(random)) {
                 random = new Location(r.nextInt(size), r.nextInt(size));
             }
-            world.setTile(random, new Person(world));
+            world.setTile(random, new Person());
         }
         p.show(); // viser selve simulationen
         p.run();
