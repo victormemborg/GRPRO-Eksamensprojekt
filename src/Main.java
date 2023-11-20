@@ -1,8 +1,6 @@
-import itumulator.executable.DisplayInformation;
 import itumulator.executable.Program;
 import itumulator.world.World;
 import itumulator.world.Location;
-import java.awt.Color;
 import java.util.Random;
 
 public class Main {
@@ -20,9 +18,6 @@ public class Main {
         Person person = new Person();
         Location place = new Location(1, 1);
         world.setTile(place, person);
-
-        DisplayInformation di = new DisplayInformation(Color.pink);
-        p.setDisplayInformation(Person.class, di);
 
         int amount = 10;
         Random r = new Random();
