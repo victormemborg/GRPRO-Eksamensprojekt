@@ -12,7 +12,7 @@ public class JUnitTest {
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 Location loc = new Location(i, j);
-                world.setTile(loc, new Person(world));
+                world.setTile(loc, new Person());
             }
         }
         //Sætter lokationen til (0,0) og får Person objektet på denne lokation
