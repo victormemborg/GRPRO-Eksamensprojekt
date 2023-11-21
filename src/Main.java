@@ -19,7 +19,7 @@ public class Main {
     */
     private static void createWorld() {
         try {
-            Scanner s = new Scanner(new File("data/test.txt"));
+            Scanner s = new Scanner(new File("data/t1-1a.txt"));
             int size = Integer.parseInt(s.nextLine());
             Program p = new Program(size, 800, 500);
             World world = p.getWorld();
