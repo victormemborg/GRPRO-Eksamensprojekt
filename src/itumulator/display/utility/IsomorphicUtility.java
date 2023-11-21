@@ -5,7 +5,6 @@ import itumulator.world.Location;
 
 public final class IsomorphicUtility {
     public static Polygon getIsoPolygon(int x, int y, int width, int height){
-        height = (int)Math.round(height/2);
         Polygon p = new Polygon();
         p.addPoint(x - width, y);
         p.addPoint(x, y - height);

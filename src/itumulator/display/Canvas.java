@@ -26,9 +26,8 @@ import itumulator.world.World;
 public class Canvas extends JPanel {
     private final static Color COLOR_EMPTY = Color.WHITE;
     private final static Color COLOR_NON_PAINTABLE = Color.GRAY;
-    private final int MS_PER_FRAME = 5;
+    private final int MS_PER_FRAME = 4;
     private World world;
-    private Random rand;
     private Graphics graphics;
     private Image img;
     private int size;
@@ -36,7 +35,6 @@ public class Canvas extends JPanel {
     private BufferedImage isoBackgroundImage;
     private AnimationFactory af;
     private java.util.Map<Class, Color> colorMap;
-    // multi-threading
     private ExecutorService executor;
     
     public Canvas(World world, int size, boolean startIso) {
@@ -50,10 +48,10 @@ public class Canvas extends JPanel {
         this.world = world;
         this.size = size;
         this.af = new AnimationFactory(world);
-        rand = new Random();
+        new Random();
         colorMap = new java.util.HashMap<>();
         BufferedImage img = ImageResourceCache.Instance().getImage("base");
-        isoBackgroundImage = ImageUtility.getScaledImage(img, IsomorphicCoordinateFactory.Instance().getIsoSize(), IsomorphicCoordinateFactory.Instance().getIsoSize());
+        isoBackgroundImage = ImageUtility.getScaledImage(img, IsomorphicCoordinateFactory.Instance().getDisplaySize(), IsomorphicCoordinateFactory.Instance().getDisplaySize());
         setIsomorphic(startIso);
     }
 
@@ -110,9 +108,9 @@ public class Canvas extends JPanel {
                     // ------
                     img = createImage(size, size);
                     graphics = img.getGraphics();
-                    graphics.drawImage(isoBackgroundImage, IsomorphicCoordinateFactory.Instance().getIsoReduction()/2,IsomorphicCoordinateFactory.Instance().getIsoSize()/2, null);
+                    graphics.drawImage(isoBackgroundImage, 0,IsomorphicCoordinateFactory.Instance().getDisplaySize()/2, null);
                     graphics.setColor(new Color(150, 210, 131));
-                    graphics.fillPolygon(IsomorphicUtility.getIsoPolygon((IsomorphicCoordinateFactory.Instance().getIsoSize()/2)+(IsomorphicCoordinateFactory.Instance().getIsoReduction()/2), IsomorphicCoordinateFactory.Instance().getIsoSize()/2, IsomorphicCoordinateFactory.Instance().getIsoSize()/2, IsomorphicCoordinateFactory.Instance().getIsoPolygonSize()/2));
+                    graphics.fillPolygon(IsomorphicUtility.getIsoPolygon((IsomorphicCoordinateFactory.Instance().getDisplaySize()/2), IsomorphicCoordinateFactory.Instance().getDisplaySize()/2, IsomorphicCoordinateFactory.Instance().getDisplaySize()/2, IsomorphicCoordinateFactory.Instance().getDisplaySize()/4));
                     // -------
                     
                     graphics.drawImage(future.get(), 0, 0,null);

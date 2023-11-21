@@ -24,7 +24,7 @@ import itumulator.simulator.Simulator;
  * {@link Simulator}. This is not relevant to continue the project.
  */
 public class Frame extends JFrame {
-    private final int UI_HEIGHT = 35;
+    private final int UI_HEIGHT = 25;
     private JTextField textField;
     private JLayeredPane layeredPane;
     private JPanel uiPanel;
@@ -39,7 +39,7 @@ public class Frame extends JFrame {
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("Itumulator");
-        setSize(pixel_size+8, pixel_size+36);
+        setSize(pixel_size+16, pixel_size+36);
         setLocationRelativeTo(null);
 
         // Set layered pane
@@ -55,7 +55,7 @@ public class Frame extends JFrame {
 
         // Setup UI
         uiPanel = new JPanel();
-        FlowLayout uiLayout = new FlowLayout(FlowLayout.RIGHT, 20, 10);
+        FlowLayout uiLayout = new FlowLayout(FlowLayout.RIGHT, 10, 5);
         uiPanel.setLayout(uiLayout);
         layeredPane.add(uiPanel, JLayeredPane.POPUP_LAYER);
 

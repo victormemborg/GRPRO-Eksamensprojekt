@@ -26,7 +26,7 @@ public class Program {
      */
     public Program(int size, int display_size, int delay){
         this.size = size;
-        IsomorphicCoordinateFactory.setupFactory(50, display_size, 0.5, size);
+        IsomorphicCoordinateFactory.setupFactory(display_size, size);
         w = new World(size);
         boolean startIso = size <= maxIsoSize;
         c = new Canvas(w, display_size, startIso);
