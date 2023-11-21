@@ -12,55 +12,76 @@ import itumulator.world.*;
 
 public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     int age = 0;
-    int foodLevel = 19; //it gets deleted one tick before the 2nd night, if it has not found food.
+    int foodLevel = 5; //it gets deleted one tick before the 2nd night, if it has not found food.
     Burrow burrow = null;
     Location loc;
+    boolean isNight = false;
 
     @Override
     public void act(World world) {
-        System.out.println(foodLevel);
-        if(!world.getEmptySurroundingTiles().isEmpty() && !world.isNight()) {
+        isNight = world.isNight();
+        if(!world.getEmptySurroundingTiles().isEmpty() && !isNight) {
             world.move(this, getEmptyRandomLocations(world));
             foodLevel--;
-            if(foodLevel <= 0) {
-                die(world);
-            }
             if(burrow == null) {
                 digHole(world);
             }    
         } 
-        if(world.isNight()) {
+        if(isNight) {
             age += 1;
             if(burrow != null) {
-                world.move(this, loc);
+                if(world.isTileEmpty(loc)) {
+                    world.move(this, loc);
+                }
             }
         }
     }
     
-    public void die(World world) {
-        world.delete(this);
-    }
 
     public void digHole(World world) {
-        loc = world.getLocation(this);
-        burrow = new Burrow();
-        world.setTile(loc, burrow);
+        loc = world.getLocation(this); 
+        if(!world.containsNonBlocking(loc)) {
+            burrow = new Burrow();
+            world.setTile(loc, burrow);
+        }
     }
+
+    public void eat(World world) {
+        Location foodLoc = world.getLocation(this);
+        if(world.containsNonBlocking(foodLoc)) {
+            if(world.getNonBlocking(foodLoc) instanceof Grass) {
+                world.delete(world.getNonBlocking(foodLoc));
+                foodLevel += 5;
+            }
+        }
+    }
+
+    /* IKKE KLAR ENDNU
+    public void reproduce(World world) {
+        Location birthLocation = getEmptyRandomLocations(world);
+            if(birthLocation != null) {
+                world.setTile(birthLocation, new Rabbit());
+            }
+        }
+    */
 
     @Override
     public DisplayInformation getInformation() {
-        return new DisplayInformation(Color.DARK_GRAY, "rabbit-small");
+        if(!isNight) {
+            return new DisplayInformation(Color.DARK_GRAY, "rabbit-small");
+        } else {
+            return new DisplayInformation(Color.DARK_GRAY, "rabbit-small-sleeping");
+        }
     }
 
     public Location getEmptyRandomLocations(World world) {
         Random r = new Random();
         Set<Location> neighbours = world.getEmptySurroundingTiles();
-        System.out.println(neighbours.size());
         if (neighbours.isEmpty()) {
             return null; 
         }
         List<Location> list = new ArrayList<>(neighbours);
         return list.get(r.nextInt(list.size())); 
-    }    
+    } 
     
 }
