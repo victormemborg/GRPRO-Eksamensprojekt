@@ -9,30 +9,20 @@ import itumulator.world.Location;
 import itumulator.world.World;
 
 public class Person implements Actor, DynamicDisplayInformationProvider{
-    World world;
-
-    public Person(World world) {
-        this.world = world;
-    }
+    boolean isNight = false;
 
     @Override
     public void act(World world){
-        //die at night
-        /* 
-        if (world.isNight()) {
-            world.delete(this);
-            return;
-        }
-        */
+        isNight = world.isNight();
         //move random
-        if (!world.getEmptySurroundingTiles().isEmpty() && world.isDay()) {
+        if (!world.getEmptySurroundingTiles().isEmpty() && !isNight) {
             world.move(this, RandomEmptyAdjacentLocation(world));
         }
     }
 
     @Override
     public DisplayInformation getInformation() {
-        if (world.isNight()) {
+        if (isNight) {
             return new DisplayInformation(Color.red, "bear-small-sleeping");
         } else {
             return new DisplayInformation(Color.red, "bear-small");

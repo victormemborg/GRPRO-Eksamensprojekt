@@ -19,7 +19,7 @@ public class Main {
             while(!world.isTileEmpty(l)) {
                 l = new Location(r.nextInt(size), r.nextInt(size));
             }
-            world.setTile(l, new Person(world));
+            world.setTile(l, new Person());
         }
 
         p.show();
