@@ -3,7 +3,6 @@ import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.simulator.Actor;
 import itumulator.world.World;
 import itumulator.world.Location;
-
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +33,10 @@ public class Person implements Actor, DynamicDisplayInformationProvider {
     
     @Override
     public DisplayInformation getInformation() {
-        if(isNight) {
-            return new DisplayInformation(Color.blue, "bear-small-sleeping");
+         if (isNight) {
+            return new DisplayInformation(Color.DARK_GRAY, "bear-sleeping");
         } else {
-            return new DisplayInformation(Color.gray, "bear-small");
+            return new DisplayInformation(Color.pink, "bear");
         }
     }
 }
