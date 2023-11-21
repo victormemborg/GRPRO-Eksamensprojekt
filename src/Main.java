@@ -19,7 +19,7 @@ public class Main {
     */
     private static void createWorld() {
         try {
-            Scanner s = new Scanner(new File("data/t1-1a.txt"));
+            Scanner s = new Scanner(new File("data/test.txt"));
             int size = Integer.parseInt(s.nextLine());
             Program p = new Program(size, 800, 500);
             World world = p.getWorld();
@@ -34,6 +34,9 @@ public class Main {
                 int input2 = Integer.parseInt(s.next());
                 for (int i = 0 ; i < input2 ; i++) {
                     Location l = new Location(ran.nextInt(size), ran.nextInt(size));
+                    while (!world.isTileEmpty(l) || world.containsNonBlocking(l)) {
+                        l = new Location(ran.nextInt(size), ran.nextInt(size));
+                    }
                     world.setTile(l, class_type.getDeclaredConstructor().newInstance());
                 }
             }
