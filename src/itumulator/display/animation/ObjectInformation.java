@@ -64,11 +64,11 @@ public class ObjectInformation {
         if (getInformation().getImageKey() != null){
             BufferedImage newImage = ImageResourceCache.Instance().getImage(getInformation().getImageKey());
             if (newImage != image){
+                image = newImage;
                 if(getInformation().getRandomDirection()){
                     setupRotation();
                 }
             }
-            image = newImage;
         }
 
         return image;

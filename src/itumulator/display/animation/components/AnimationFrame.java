@@ -4,8 +4,9 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-
 import itumulator.display.animation.ObjectInformation;
 import itumulator.display.utility.IsomorphicCoordinateFactory;
 import itumulator.display.utility.IsomorphicUtility;
@@ -34,7 +35,8 @@ public class AnimationFrame{
     }
 
     public void draw(Graphics g){
-        int correctionPixels = IsomorphicCoordinateFactory.Instance().getIsoReduction();
+        double tileWidth = IsomorphicCoordinateFactory.Instance().getTileWidth();
+        double tileHeight = IsomorphicCoordinateFactory.Instance().getTileHeight();
 
         if (alphaComp != null){
             ((Graphics2D)g).setComposite(alphaComp);
@@ -45,33 +47,68 @@ public class AnimationFrame{
             g.drawImage(img, pixelPoint.getX(), pixelPoint.getY(), null);
         } else {
             if (oi.getImage() != null){
-                BufferedImage scaledImg = IsomorphicCoordinateFactory.Instance().getScaledImage(oi.getImage());
-                // Draw shadow oval
-                ((Graphics2D)g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, SHADOW_OPACITY));
-                g.setColor(Color.BLACK);
-                g.fillOval(
-                    pixelPoint.getX()+(scaledImg.getWidth()/2),
-                    pixelPoint.getY()+(scaledImg.getHeight()/2), 
+                if (oi.isGroundObject()){
+                    BufferedImage scaledImg = IsomorphicCoordinateFactory.Instance().getScaledImage(oi.getImage());
+
+                    double rotRadians = Math.toRadians(45);
+
+                    double unitX = Math.abs(Math.cos(rotRadians));
+                    double unitY = Math.abs(Math.sin(rotRadians));
+
+                    int newWidth = (int)Math.floor(scaledImg.getWidth() * unitX + scaledImg.getHeight() * unitY);
+                    int newHeight = (int)Math.floor(scaledImg.getHeight() * unitX + scaledImg.getWidth() * unitY);
+
+                    BufferedImage rotatedImg = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+
+                    AffineTransform transform = new AffineTransform();
+                    transform.translate((newWidth - scaledImg.getWidth()) / 2, (newHeight - scaledImg.getHeight()) / 2);
+                    transform.rotate(rotRadians, scaledImg.getWidth()/2, scaledImg.getHeight()/2);
+
+                    AffineTransformOp op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
+                    rotatedImg = op.filter(scaledImg, rotatedImg);
+
+                    transform = new AffineTransform();
+                    transform.scale(1.0, 0.5);
+
+                    op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
+
+                    BufferedImage squeezedImg = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+
+                    squeezedImg = op.filter(rotatedImg, squeezedImg);
+                    
+                    g.drawImage(
+                        squeezedImg, 
+                        pixelPoint.getX()-(squeezedImg.getWidth()/2), 
+                        pixelPoint.getY(),
+                         null);
+                } else {
+                    BufferedImage scaledImg = IsomorphicCoordinateFactory.Instance().getScaledImage(oi.getImage());
+                    // Draw shadow oval
+                    ((Graphics2D)g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, SHADOW_OPACITY));
+                    g.setColor(Color.BLACK);
+                    g.fillOval(
+                    pixelPoint.getX()-(int)(tileHeight/2),
+                    pixelPoint.getY()+(int)((tileHeight/6)*2),
                     scaledImg.getWidth(),
                     scaledImg.getHeight()/5);
-
-                if (alphaComp != null){
-                    ((Graphics2D)g).setComposite(alphaComp);
-                } else {
-                    ((Graphics2D)g).setComposite(AlphaComposite.SrcOver);
-                }
-
-                // Draw image
-                g.drawImage(
+                    
+                    if (alphaComp != null){
+                        ((Graphics2D)g).setComposite(alphaComp);
+                    } else {
+                        ((Graphics2D)g).setComposite(AlphaComposite.SrcOver);
+                    }
+                
+                    // Draw image
+                    g.drawImage(
                     scaledImg,
-                    pixelPoint.getX()+(correctionPixels/4),
-                    pixelPoint.getY()- (correctionPixels/3),
+                    pixelPoint.getX()-(scaledImg.getWidth()/2),
+                    pixelPoint.getY()-(int)(tileHeight/2),
                     null);
-            } else {
-                // Draw polygon with color
-                int isoSize = IsomorphicCoordinateFactory.Instance().getTileSize()/2;
-                g.setColor(oi.getColor());
-                g.fillPolygon(IsomorphicUtility.getIsoPolygon(pixelPoint.getX() + correctionPixels - (correctionPixels/4), pixelPoint.getY() + (correctionPixels/2), isoSize, isoSize));
+                    }
+                } else {
+                    // Draw polygon with color
+                    g.setColor(oi.getColor());
+                    g.fillPolygon(IsomorphicUtility.getIsoPolygon(pixelPoint.getX(), pixelPoint.getY()+(int)tileHeight/2, (int)tileHeight, (int)tileHeight/2));
             }
         }
         ((Graphics2D)g).setComposite(AlphaComposite.SrcOver);

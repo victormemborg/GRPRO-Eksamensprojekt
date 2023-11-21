@@ -25,7 +25,6 @@ public class DisplayInformation {
      * @param color to fall back upon.
      * @param imageKey to the image
      * @param random_direction Whether or not the image can be placed in a random direction.
-     * @param ground_object if the object should be flat on the ground in isomorphic view.
      */
     public DisplayInformation(Color color, String imageKey, boolean random_direction){
         if(color == null || imageKey == null) throw new IllegalArgumentException("Both parameters must be provided");

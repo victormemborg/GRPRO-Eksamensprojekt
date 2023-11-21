@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -52,7 +53,9 @@ public class ImageResourceCache {
                     if (cache.containsKey(elementName)){
                         throw new IllegalArgumentException("Image names in resource folder must be unique - " + elementName);
                     } else {
-                        cache.put(elementName, ImageIO.read(element));
+                        BufferedImage loadedImg = ImageIO.read(element);
+                        
+                        cache.put(elementName, squareImage(loadedImg));
                     }
                 } else {
                     loadFolder(folderPath+element.getName()+"/");
@@ -61,5 +64,30 @@ public class ImageResourceCache {
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
+    }
+
+    private BufferedImage squareImage(BufferedImage loadedImg) {
+        int maxPixel = Math.max(loadedImg.getWidth(), loadedImg.getHeight());
+        boolean maxWidth = maxPixel == loadedImg.getWidth();
+        int padding = 0;
+        if (maxWidth){
+            padding = (maxPixel - loadedImg.getHeight()) / 2;
+        } else {
+            padding = (maxPixel - loadedImg.getWidth()) / 2;
+        }
+
+        BufferedImage newImg = new BufferedImage(maxPixel, maxPixel, loadedImg.getType());
+
+        Graphics2D g2 = newImg.createGraphics();
+
+        if (maxWidth){
+            g2.drawImage(loadedImg, 0, padding, null);
+        } else {
+            g2.drawImage(loadedImg, padding, 0, null);
+        }
+
+        g2.dispose();
+
+        return newImg;
     }
 }

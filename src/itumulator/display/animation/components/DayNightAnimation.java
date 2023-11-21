@@ -10,8 +10,8 @@ import itumulator.display.utility.Point2DInt;
 import itumulator.world.World;
 
 public class DayNightAnimation extends Animation{
-    private final int IMAGE_HEIGHT = 150;
-    private final int Y_POS = 100;
+    private final double IMAGE_HEIGHT_PERCENT = 0.15;
+    private final double Y_POS_PERCENT = 0.2;
     private BufferedImage img;
     private boolean isDay;
     private boolean isDayPrime;
@@ -33,16 +33,18 @@ public class DayNightAnimation extends Animation{
             }
         }
         
-        int dayPixelWidth = IsomorphicCoordinateFactory.Instance().getTotalSize()/World.getDayDuration();
+        int dayPixelWidth = (IsomorphicCoordinateFactory.Instance().getDisplaySize()-(img.getWidth()/2))/World.getDayDuration();
 
         int actualTime = timePrime % World.getDayDuration();
-        Point2DInt startPixelPoint = new Point2DInt((dayPixelWidth * actualTime) - Y_POS/2, Y_POS*2);
+        int relativeYPos = (int)(IsomorphicCoordinateFactory.Instance().getDisplaySize() * Y_POS_PERCENT);
 
-        Point2DInt endPixelPoint = startPixelPoint.interpolate(new Point2DInt(startPixelPoint.getX() + dayPixelWidth, Y_POS*2), (1.00 * index) / animationLength);
+        Point2DInt startPixelPoint = new Point2DInt((dayPixelWidth * actualTime) - (int)(img.getWidth()/2), relativeYPos);
 
-        double y = -Math.sin((actualTime + ((1.00 * index) / animationLength))*(Math.PI/World.getDayDuration())) * Y_POS* 1.5;
+        Point2DInt endPixelPoint = startPixelPoint.interpolate(new Point2DInt((startPixelPoint.getX() + dayPixelWidth), relativeYPos), (1.00 * index) / animationLength);
 
-        endPixelPoint.setY((int)y + (Y_POS * 2));
+        double y = -Math.sin((actualTime + ((1.00 * index) / animationLength))*(Math.PI/World.getDayDuration())) * relativeYPos * 1.0;
+
+        endPixelPoint.setY((int)y + (relativeYPos));
 
         return new AnimationFrame(img, endPixelPoint);
     }
@@ -53,7 +55,7 @@ public class DayNightAnimation extends Animation{
         } else {
             img = ImageResourceCache.Instance().getImage("moon");
         }
-        double ratio = (IMAGE_HEIGHT * 1.0) / img.getHeight();
-        img = ImageUtility.getScaledImage(img, (int)(ratio * img.getWidth()), IMAGE_HEIGHT);
+        double ratio = (IsomorphicCoordinateFactory.Instance().getDisplaySize() * IMAGE_HEIGHT_PERCENT) / img.getHeight();
+        img = ImageUtility.getScaledImage(img, (int)(ratio * img.getWidth()), (int)(IsomorphicCoordinateFactory.Instance().getDisplaySize() * IMAGE_HEIGHT_PERCENT));
     }
 }
