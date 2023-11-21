@@ -21,7 +21,7 @@ public class AnimationSet implements Callable<BufferedImage>{
 
     @Override
     public BufferedImage call() {
-        int isoSize = IsomorphicCoordinateFactory.Instance().getIsoSize() + IsomorphicCoordinateFactory.Instance().getIsoReduction();
+        int isoSize = IsomorphicCoordinateFactory.Instance().getDisplaySize();
         BufferedImage image = new BufferedImage(isoSize, isoSize, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
         for (AnimationFrame animationFrame : frames) {
