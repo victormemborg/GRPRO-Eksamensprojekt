@@ -16,50 +16,37 @@ public class IsomorphicCoordinateFactory {
         }
         /* This is Singleton pattern */
 
-        public static void setupFactory(int isoCanvasReduction, int size, double scalingfactor, int worldSize){
+        public static void setupFactory(int displaySize, int worldSize){
             if (instance == null){
                 instance = new IsomorphicCoordinateFactory();
             }
-            instance.isoCanvasReduction = isoCanvasReduction;
-            instance.size = size;
-            instance.scalingFactor = scalingfactor;
+            instance.displaySize = displaySize;
             instance.worldSize = worldSize;
         }
 
         public Point2DInt getIsoLocation(Location l){
-            return IsomorphicUtility.getIsoLocation(l, getTileSize(), getIsoPolygonSize());
-        }
-
-        public int getIsoSize(){
-            return size - isoCanvasReduction;
+            return IsomorphicUtility.getIsoLocation(l, (int)getTileWidth(), getDisplaySize());
         }
         
-        public int getIsoPolygonSize(){
-            return getIsoSize() - (isoCanvasReduction/2);
+        public double getTileWidth(){
+            return getDisplaySize()/worldSize;
         }
 
-        public int getIsoReduction(){
-            return isoCanvasReduction;
+        public double getTileHeight(){
+            return getTileWidth()/2;
         }
 
-        public int getTileSize(){
-            return getIsoSize()/worldSize;
-        }
-
-        public int getTotalSize(){
-            return size;
+        public int getDisplaySize(){
+            return displaySize;
         }
 
         public BufferedImage getScaledImage(BufferedImage image){
-            return ImageUtility.getScaledImage(image, getTileSize()/2, getTileSize());
+            return ImageUtility.getScaledImage(image, (int)getTileHeight(), (int)getTileHeight());
         }
 
-        private int isoCanvasReduction;
-        private int size;
-        private double scalingFactor;
+        private int displaySize;
         private int worldSize;
 
         private IsomorphicCoordinateFactory(){
         }
-
 }

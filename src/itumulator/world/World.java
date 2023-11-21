@@ -263,7 +263,6 @@ public class World {
         if (entities.get(object) != null) {
             throw new IllegalArgumentException("Entity already exists in the world.");
         }
-        validateContents(location);
         validateCoordinates(location);
 
         Object[] tile = this.tiles[location.getX()][location.getY()];
