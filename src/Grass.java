@@ -9,20 +9,21 @@ import java.awt.Color;
 import java.util.Random;
 import java.util.ArrayList;
 
-public class Grass implements Actor, DynamicDisplayInformationProvider, NonBlocking{
+public class Grass implements Actor, DynamicDisplayInformationProvider, NonBlocking {
     boolean dying = false;
     int time_dying = 0;
+
     @Override
     public void act(World world){
         Random ran = new Random();
         //Maybe dø
-        if (ran.nextInt(11) >= 8) {
+        if (ran.nextInt(20) >= 19) {
             dying = true;
         }
         if (dying) {
             time_dying = time_dying + 1;
         }
-        if (time_dying > 8) {
+        if (time_dying > 4) {
             world.delete(this);
         }
 
@@ -33,7 +34,7 @@ public class Grass implements Actor, DynamicDisplayInformationProvider, NonBlock
                 list.add(l);
             }
         }
-        if (!list.isEmpty() && ran.nextBoolean() && !dying) {
+        if (!list.isEmpty() && ran.nextBoolean() && !dying && world.isDay()) {
                 world.setTile(list.get(ran.nextInt(list.size())), new Grass());
         }
     }
@@ -41,7 +42,7 @@ public class Grass implements Actor, DynamicDisplayInformationProvider, NonBlock
     @Override
     public DisplayInformation getInformation(){
         if (!dying) {
-            return new DisplayInformation(Color.green, "better-grass");
+            return new DisplayInformation(Color.green, "grass-better");
         } else {
             return new DisplayInformation(Color.green, "grass-dying");
         }
