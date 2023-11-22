@@ -1,3 +1,3 @@
 5
-grass 5
-rabbit 3
+grass 3
+rabbit 4

@@ -11,32 +11,51 @@ import itumulator.world.*;
 
 
 public class Rabbit implements Actor, DynamicDisplayInformationProvider{
+    static int amountOfRabbits;
     int age = 0;
-    int foodLevel = 5; //it gets deleted one tick before the 2nd night, if it has not found food.
+    int foodLevel = 20; 
     Burrow burrow = null;
     Location loc;
     boolean isNight = false;
 
+    Rabbit() {
+        amountOfRabbits += 1;
+    }
+
     @Override
     public void act(World world) {
         isNight = world.isNight();
+        age(world);
         if(!world.getEmptySurroundingTiles().isEmpty() && !isNight) {
-            world.move(this, getEmptyRandomLocations(world));
-            foodLevel--;
+            moveAndEat(world);
             if(burrow == null) {
                 digHole(world);
             }    
         } 
         if(isNight) {
-            age += 1;
-            if(burrow != null) {
-                if(world.isTileEmpty(loc)) {
-                    world.move(this, loc);
-                }
+            if(burrow != null  && world.isTileEmpty(loc)) {
+                world.move(this, loc);
             }
         }
     }
-    
+
+    public void age(World world) {
+        if(world.getCurrentTime() == 0) {
+            age++;
+        }
+    }
+
+    public void moveAndEat(World world) {
+        if(foodLevel > 0) {
+            world.move(this, getEmptyRandomLocations(world));
+            eat(world);
+            foodLevel--;
+            reproduce(world);
+        } else {
+            world.delete(this);
+            amountOfRabbits--;
+        }
+    }
 
     public void digHole(World world) {
         loc = world.getLocation(this); 
@@ -48,31 +67,38 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
 
     public void eat(World world) {
         Location foodLoc = world.getLocation(this);
-        if(world.containsNonBlocking(foodLoc)) {
-            if(world.getNonBlocking(foodLoc) instanceof Grass) {
+        if(world.containsNonBlocking(foodLoc) && world.getNonBlocking(foodLoc) instanceof Grass) {
+            Grass grass = (Grass) world.getNonBlocking(foodLoc);
+            if(!grass.getDying()) {
                 world.delete(world.getNonBlocking(foodLoc));
                 foodLevel += 5;
+                System.out.println("Spiste mad");
             }
         }
     }
 
-    /* IKKE KLAR ENDNU
     public void reproduce(World world) {
-        Location birthLocation = getEmptyRandomLocations(world);
-            if(birthLocation != null) {
+        if(age > 3 && foodLevel > 20 && amountOfRabbits >= 2) {
+            Location birthLocation = getEmptyRandomLocations(world);
+            if(birthLocation != null && world.isTileEmpty(birthLocation)) {
                 world.setTile(birthLocation, new Rabbit());
+                foodLevel -= 15;
+                System.out.println("Kanin født");
+                amountOfRabbits++;
             }
         }
-    */
+    } 
 
     @Override
     public DisplayInformation getInformation() {
-        if(!isNight) {
-            return new DisplayInformation(Color.DARK_GRAY, "rabbit-small");
+        String image;
+        if(age > 3) {
+            image = isNight ? "rabbit-sleeping" : "rabbit-large";
         } else {
-            return new DisplayInformation(Color.DARK_GRAY, "rabbit-small-sleeping");
+            image = isNight ? "rabbit-small-sleeping" : "rabbit-small";
         }
-    }
+        return new DisplayInformation(Color.DARK_GRAY, image);
+    }    
 
     public Location getEmptyRandomLocations(World world) {
         Random r = new Random();
