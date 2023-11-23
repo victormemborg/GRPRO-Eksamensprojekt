@@ -12,13 +12,19 @@ import itumulator.world.*;
 
 public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     static int amountOfRabbits;
-    int age = 0;
-    int foodLevel = 20; 
-    Burrow burrow = null;
-    Location loc;
-    boolean isNight = false;
-    boolean isSleeping = false;
-    World world;
+    private final int FOOD_GAIN = 5;
+    private final int FOOD_LOSS_REPRODUCTION = 25;
+    private final int REQUIRED_FOOD_REPRODUCTION = 40;
+    private final int MIN_AGE_ADULT = 3;
+
+    private int age = 0;
+    private int foodLevel = 20; 
+
+    private Burrow burrow = null;
+    private Location burrowLoc = null;
+
+    private boolean isNight = false;
+    private boolean isSleeping = false;
 
     Rabbit() {
         amountOfRabbits += 1;
@@ -36,25 +42,25 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
         }
     }
 
-    public void increaseAgeIfMorning(World world) {
+    private void increaseAgeIfMorning(World world) {
         if(world.getCurrentTime() == 0) {
             age++;
         }
     }
 
-    public void moveToBurrow(World world) {
-        if(burrow != null  && world.isTileEmpty(loc)) {
-            world.move(this, loc);
+    private void moveToBurrow(World world) {
+        if(burrow != null  && world.isTileEmpty(burrowLoc)) {
+            world.move(this, burrowLoc);
             isSleeping = true;
         }
     }
 
-    public void killRabbit(World world) {
+    private void killRabbit(World world) {
         world.delete(this);
         amountOfRabbits--;
     }
 
-    public void moveAndEat(World world) {
+    private void moveAndEat(World world) {
         isSleeping = false;
         if(!world.getEmptySurroundingTiles().isEmpty()) {
             if(foodLevel > 0) {
@@ -68,36 +74,33 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
         }
     }
 
-    public void digHole(World world) {
+    private void digHole(World world) {
         if(burrow == null) {
-            loc = world.getLocation(this); 
-            System.out.println(loc);
-            if(!world.containsNonBlocking(loc)) {
+            burrowLoc = world.getLocation(this); 
+            if(!world.containsNonBlocking(burrowLoc)) {
                 burrow = new Burrow();
-                world.setTile(loc, burrow);
+                world.setTile(burrowLoc, burrow);
             }
         }
     }
 
-    public void eat(World world) {
+    private void eat(World world) {
         Location foodLoc = world.getLocation(this);
         if(world.containsNonBlocking(foodLoc) && world.getNonBlocking(foodLoc) instanceof Grass) {
             Grass grass = (Grass) world.getNonBlocking(foodLoc);
             if(!grass.getDying()) {
                 world.delete(world.getNonBlocking(foodLoc));
-                foodLevel += 5;
-                System.out.println("Spiste mad");
+                foodLevel += FOOD_GAIN;
             }
         }
     }
 
-    public void reproduce(World world) {
-        if(age > 3 && foodLevel > 20 && amountOfRabbits >= 2) {
+    private void reproduce(World world) {
+        if(age > MIN_AGE_ADULT && foodLevel > REQUIRED_FOOD_REPRODUCTION && amountOfRabbits >= 2) {
             Location birthLocation = getEmptyRandomLocations(world);
             if(birthLocation != null && world.isTileEmpty(birthLocation)) {
                 world.setTile(birthLocation, new Rabbit());
-                foodLevel -= 15;
-                System.out.println("Kanin født");
+                foodLevel -= FOOD_LOSS_REPRODUCTION;
                 amountOfRabbits++;
             }
         }
@@ -106,7 +109,7 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     @Override
     public DisplayInformation getInformation() {
         String image;
-        if(age > 3) {
+        if(age > MIN_AGE_ADULT) {
             image = isSleeping ? "rabbit-sleeping" : "rabbit-large";
         } else {
             image = isSleeping ? "rabbit-small-sleeping" : "rabbit-small";
@@ -114,7 +117,7 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
         return new DisplayInformation(Color.DARK_GRAY, image);
     }    
 
-    public Location getEmptyRandomLocations(World world) {
+    private Location getEmptyRandomLocations(World world) {
         Random r = new Random();
         Set<Location> neighbours = world.getEmptySurroundingTiles();
         if (neighbours.isEmpty()) {

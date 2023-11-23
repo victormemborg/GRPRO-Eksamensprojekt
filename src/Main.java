@@ -28,8 +28,9 @@ public class Main {
         Scanner scan = new Scanner(new File(path));
         Program p = new Program(Integer.parseInt(scan.nextLine()), display_size, delay);
 
-        int line_counter = 2;
+        int line_counter = 1;
         while (scan.hasNextLine()) {
+            line_counter++;
             try {
                 //get input
                 String input1 = scan.next();
@@ -44,7 +45,6 @@ public class Main {
                     int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
                     world.setTile(getRanLocWithoutType(type, p), class_type.getDeclaredConstructor().newInstance());
                 }
-                line_counter++;
 
             } catch (Exception e) {
                 System.out.println("Fejl: " + e.getClass() + ", skipper linje " + line_counter + " i " + path);
