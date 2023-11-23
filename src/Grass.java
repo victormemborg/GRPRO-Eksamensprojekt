@@ -49,4 +49,8 @@ public class Grass implements Actor, DynamicDisplayInformationProvider, NonBlock
         
     }
 
+    public boolean getDying() {
+        return dying;
+    }
+
 }
