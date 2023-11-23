@@ -68,7 +68,6 @@ public class Main {
                 }
             }
         }
-        Random ran = new Random();
-        return empty_location_list.get(ran.nextInt(empty_location_list.size()));
+        return empty_location_list.get((new Random()).nextInt(empty_location_list.size()));
     }
 }
