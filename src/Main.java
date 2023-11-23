@@ -18,6 +18,10 @@ public class Main {
 
         } catch (FileNotFoundException fnfe) {
             System.out.println("Check path!");
+        } catch (NumberFormatException nfe) {
+            System.out.println("The first line of your file should be an integer!");
+        } catch (Exception e) {
+            System.out.println("Something unexpected happened! Message:" + e.getMessage() + " Class: " + e.getClass());
         }
     }
 
@@ -47,7 +51,7 @@ public class Main {
                 }
 
             } catch (Exception e) {
-                System.out.println("Fejl: " + e.getClass() + ", skipper linje " + line_counter + " i " + path);
+                System.out.println("Error: " + e.getClass() + ", skipping line " + line_counter + " in " + path);
             }
         }
         scan.close();
