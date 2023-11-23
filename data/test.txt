@@ -1,3 +1,4 @@
 5
-grass 5
-rabbit 3
+grass 10
+rabbi 4
+rabbit 10

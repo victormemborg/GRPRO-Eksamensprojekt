@@ -12,46 +12,43 @@ import itumulator.world.World;
 public class Main {
 
     public static void main(String[] args) {
-        try {
-            createWorldFromFile("data/test.txt");
-        } catch (FileNotFoundException fnfe) {
-            System.out.println("Check path!");
-        }
-        
+        Program p = createProgramFromFile("data/test.txt");
+        p.show();
+        p.run();
     }
 
     /*
      dadadaaw
     */
-    private static void createWorldFromFile(String path) throws FileNotFoundException{
-        Scanner s = new Scanner(new File(path));
+    private static Program createProgramFromFile(String path){
+        Scanner s = getScanner(path);
         int size = Integer.parseInt(s.nextLine());
-        Program p = new Program(size, 800, 500);
-        World world = p.getWorld();
+        Program p = new Program(size, 800, 1000);
         ArrayList<Location> loclistNonBlock = getAllLocations(size);
         ArrayList<Location> loclistBlock = getAllLocations(size);
 
-        while (s.hasNext()) {
+        int line_counter = 1;
+        while (s.hasNextLine() && line_counter++ < Integer.MAX_VALUE) {
             try {
-                //get class from input
-                Class<?> clazz = getClassFromInput(s);
-                //create specified number of instances
-                int antal = Integer.parseInt(s.next());
-                for (int i = 0 ; i < antal ; i++) {
-                    if (Arrays.toString(clazz.getInterfaces()).contains("NonBlocking")) {
-                        setRandomTileFromList(world, loclistNonBlock, clazz);
-                    } else {
-                        setRandomTileFromList(world, loclistBlock, clazz);
-                    }
-                }
+                createElementsFromLine(s, p, loclistNonBlock, loclistBlock);
             } catch (Exception e) {
-                System.out.println("Fejl i input, skipper linje");
+                System.out.println("Fejl i input, skipper linje " + line_counter + " i inputfil");
             }
         }
-        s.close();
-        p.show();
-        p.run();
 
+        s.close();
+        return p;
+    }
+
+    private static Scanner getScanner(String path) {
+        try {
+            Scanner s = new Scanner(new File(path));
+            return s;
+        } catch (FileNotFoundException fnfe) {
+            System.out.println("Check path!");
+            System.exit(-1);
+            return null;
+        }
     }
 
     private static ArrayList<Location> getAllLocations(int size) {
@@ -64,28 +61,26 @@ public class Main {
         return loclist;
     }
 
-    private static Class<?> getClassFromInput(Scanner s) {
-        try {
-            String input = s.next();
-            String class_name = input.substring(0, 1).toUpperCase() + input.substring(1, input.length());
-            Class<?> class_type = Class.forName(class_name);
-            return class_type;
-        } catch (ClassNotFoundException cnfe) {
-            System.out.println(cnfe.getMessage());
-            return null;
+    private static void createElementsFromLine(Scanner s, Program p, ArrayList<Location> loclistNonBlock, ArrayList<Location> loclistBlock) throws Exception{
+        World world = p.getWorld();
+        //get class from input
+        String input1 = s.next();
+        int input2 = Integer.parseInt(s.next());
+        String class_name = input1.substring(0, 1).toUpperCase() + input1.substring(1, input1.length());
+        Class<?> class_type = Class.forName(class_name);
+
+        //create specified number of instances
+        Random ran = new Random();
+        for (int i = 0 ; i < input2 ; i++) {
+            if (Arrays.toString(class_type.getInterfaces()).contains("NonBlocking")) {
+                int r = ran.nextInt(loclistNonBlock.size());
+                world.setTile(loclistNonBlock.get(r), class_type.getDeclaredConstructor().newInstance());
+                loclistNonBlock.remove(r);
+            } else {
+                int r = ran.nextInt(loclistBlock.size());
+                world.setTile(loclistBlock.get(r), class_type.getDeclaredConstructor().newInstance());
+                loclistBlock.remove(r);
+            }
         }
-
-    }
-
-    private static void setRandomTileFromList(World world, ArrayList<Location> loclist, Class<?> class_type) {
-        try {
-            Random ran = new Random();
-            int r = ran.nextInt(loclist.size());
-            world.setTile(loclist.get(r), class_type.getDeclaredConstructor().newInstance());
-            loclist.remove(r);
-        } catch (Exception e) {
-            System.out.println(e.getMessage() + " Fejl i setTileFromLocList(). Skipper dette step");
-        }
-
     }
 }
