@@ -15,7 +15,7 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     private final int FOOD_GAIN = 5;
     private final int FOOD_LOSS_REPRODUCTION = 25;
     private final int REQUIRED_FOOD_REPRODUCTION = 40;
-    private final int MIN_AGE_REPRODUCTION = 3;
+    private final int MIN_AGE_ADULT = 3;
 
     private int age = 0;
     private int foodLevel = 20; 
@@ -96,7 +96,7 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     }
 
     private void reproduce(World world) {
-        if(age > MIN_AGE_REPRODUCTION && foodLevel > REQUIRED_FOOD_REPRODUCTION && amountOfRabbits >= 2) {
+        if(age > MIN_AGE_ADULT && foodLevel > REQUIRED_FOOD_REPRODUCTION && amountOfRabbits >= 2) {
             Location birthLocation = getEmptyRandomLocations(world);
             if(birthLocation != null && world.isTileEmpty(birthLocation)) {
                 world.setTile(birthLocation, new Rabbit());
@@ -109,7 +109,7 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     @Override
     public DisplayInformation getInformation() {
         String image;
-        if(age > 3) {
+        if(age > MIN_AGE_ADULT) {
             image = isSleeping ? "rabbit-sleeping" : "rabbit-large";
         } else {
             image = isSleeping ? "rabbit-small-sleeping" : "rabbit-small";
