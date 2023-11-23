@@ -17,6 +17,8 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     Burrow burrow = null;
     Location loc;
     boolean isNight = false;
+    boolean isSleeping = false;
+    World world;
 
     Rabbit() {
         amountOfRabbits += 1;
@@ -25,43 +27,55 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     @Override
     public void act(World world) {
         isNight = world.isNight();
-        age(world);
-        if(!world.getEmptySurroundingTiles().isEmpty() && !isNight) {
+        increaseAgeIfMorning(world);
+        if(!isNight) {
             moveAndEat(world);
-            if(burrow == null) {
-                digHole(world);
-            }    
-        } 
-        if(isNight) {
-            if(burrow != null  && world.isTileEmpty(loc)) {
-                world.move(this, loc);
-            }
+            reproduce(world); 
+        } else {
+            moveToBurrow(world);
         }
     }
 
-    public void age(World world) {
+    public void increaseAgeIfMorning(World world) {
         if(world.getCurrentTime() == 0) {
             age++;
         }
     }
 
+    public void moveToBurrow(World world) {
+        if(burrow != null  && world.isTileEmpty(loc)) {
+            world.move(this, loc);
+            isSleeping = true;
+        }
+    }
+
+    public void killRabbit(World world) {
+        world.delete(this);
+        amountOfRabbits--;
+    }
+
     public void moveAndEat(World world) {
-        if(foodLevel > 0) {
-            world.move(this, getEmptyRandomLocations(world));
-            eat(world);
-            foodLevel--;
-            reproduce(world);
-        } else {
-            world.delete(this);
-            amountOfRabbits--;
+        isSleeping = false;
+        if(!world.getEmptySurroundingTiles().isEmpty()) {
+            if(foodLevel > 0) {
+                world.move(this, getEmptyRandomLocations(world));
+                digHole(world);
+                eat(world);
+                foodLevel--;
+            } else {
+                killRabbit(world);
+            }
         }
     }
 
     public void digHole(World world) {
-        loc = world.getLocation(this); 
-        if(!world.containsNonBlocking(loc)) {
-            burrow = new Burrow();
-            world.setTile(loc, burrow);
+        if(burrow == null) {
+            loc = world.getLocation(this); 
+            System.out.println(loc);
+            if(!world.containsNonBlocking(loc)) {
+                burrow = new Burrow();
+                world.setTile(loc, burrow);
+            }
         }
     }
 
@@ -93,9 +107,9 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     public DisplayInformation getInformation() {
         String image;
         if(age > 3) {
-            image = isNight ? "rabbit-sleeping" : "rabbit-large";
+            image = isSleeping ? "rabbit-sleeping" : "rabbit-large";
         } else {
-            image = isNight ? "rabbit-small-sleeping" : "rabbit-small";
+            image = isSleeping ? "rabbit-small-sleeping" : "rabbit-small";
         }
         return new DisplayInformation(Color.DARK_GRAY, image);
     }    
