@@ -1,4 +1,4 @@
 5
-grass 10
+grass 8
 rabbi 4
 rabbit 10

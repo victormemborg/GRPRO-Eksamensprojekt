@@ -10,77 +10,61 @@ import itumulator.world.Location;
 import itumulator.world.World;
 
 public class Main {
-
     public static void main(String[] args) {
-        Program p = createProgramFromFile("data/test.txt");
-        p.show();
-        p.run();
+        try {
+            Program p = createProgramFromFile("data/test.txt", 800, 500);
+            p.show();
+            p.run();
+
+        } catch (FileNotFoundException fnfe) {
+            System.out.println("Check path!");
+        }
     }
 
     /*
      dadadaaw
     */
-    private static Program createProgramFromFile(String path){
-        Scanner s = getScanner(path);
-        int size = Integer.parseInt(s.nextLine());
-        Program p = new Program(size, 800, 1000);
-        ArrayList<Location> loclistNonBlock = getAllLocations(size);
-        ArrayList<Location> loclistBlock = getAllLocations(size);
+    private static Program createProgramFromFile(String path, int display_size, int delay) throws FileNotFoundException{
+        Scanner scan = new Scanner(new File(path));
+        Program p = new Program(Integer.parseInt(scan.nextLine()), display_size, delay);
 
-        int line_counter = 1;
-        while (s.hasNextLine() && line_counter++ < Integer.MAX_VALUE) {
+        int line_counter = 2;
+        while (scan.hasNextLine()) {
             try {
-                createElementsFromLine(s, p, loclistNonBlock, loclistBlock);
+                //get input
+                String input1 = scan.next();
+                int input2 = Integer.parseInt(scan.next());
+                //Determine class
+                String class_name = input1.substring(0, 1).toUpperCase() + input1.substring(1, input1.length());
+                Class<?> class_type = Class.forName(class_name);
+
+                //create specified number of instances
+                World world = p.getWorld();
+                for (int i = 0 ; i < input2 ; i++) {
+                    int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
+                    world.setTile(getRanLocWithoutType(type, p), class_type.getDeclaredConstructor().newInstance());
+                }
+                line_counter++;
+
             } catch (Exception e) {
-                System.out.println("Fejl i input, skipper linje " + line_counter + " i inputfil");
+                System.out.println("Fejl: " + e.getClass() + ", skipper linje " + line_counter + " i " + path);
             }
         }
-
-        s.close();
+        scan.close();
         return p;
     }
 
-    private static Scanner getScanner(String path) {
-        try {
-            Scanner s = new Scanner(new File(path));
-            return s;
-        } catch (FileNotFoundException fnfe) {
-            System.out.println("Check path!");
-            System.exit(-1);
-            return null;
-        }
-    }
-
-    private static ArrayList<Location> getAllLocations(int size) {
-        ArrayList<Location> loclist = new ArrayList<>();
-        for (int x = 0 ; x < size ; x++) {
-            for (int y = 0 ; y < size ; y++) {
-                loclist.add(new Location(x, y));
+    private static Location getRanLocWithoutType(int type, Program p) {
+        ArrayList<Location> empty_location_list = new ArrayList<>();
+        Object[][][] tiles = p.getWorld().getTiles();
+        for (int i = 0; i < p.getSize() ; i++) {
+            for (int j = 0; j < p.getSize() ; j++) {
+                if (tiles[i][j][type] == null) {
+                    empty_location_list.add(new Location(i, j));
+                }
             }
         }
-        return loclist;
-    }
-
-    private static void createElementsFromLine(Scanner s, Program p, ArrayList<Location> loclistNonBlock, ArrayList<Location> loclistBlock) throws Exception{
-        World world = p.getWorld();
-        //get class from input
-        String input1 = s.next();
-        int input2 = Integer.parseInt(s.next());
-        String class_name = input1.substring(0, 1).toUpperCase() + input1.substring(1, input1.length());
-        Class<?> class_type = Class.forName(class_name);
-
-        //create specified number of instances
         Random ran = new Random();
-        for (int i = 0 ; i < input2 ; i++) {
-            if (Arrays.toString(class_type.getInterfaces()).contains("NonBlocking")) {
-                int r = ran.nextInt(loclistNonBlock.size());
-                world.setTile(loclistNonBlock.get(r), class_type.getDeclaredConstructor().newInstance());
-                loclistNonBlock.remove(r);
-            } else {
-                int r = ran.nextInt(loclistBlock.size());
-                world.setTile(loclistBlock.get(r), class_type.getDeclaredConstructor().newInstance());
-                loclistBlock.remove(r);
-            }
-        }
+        return empty_location_list.get(ran.nextInt(empty_location_list.size()));
     }
 }
