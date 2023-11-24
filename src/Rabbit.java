@@ -11,56 +11,120 @@ import itumulator.world.*;
 
 
 public class Rabbit implements Actor, DynamicDisplayInformationProvider{
-    int age = 0;
-    int foodLevel = 19; //it gets deleted one tick before the 2nd night, if it has not found food.
-    Burrow burrow = null;
-    Location loc;
+    static int amountOfRabbits;
+    private final int FOOD_GAIN = 5;
+    private final int FOOD_LOSS_REPRODUCTION = 25;
+    private final int REQUIRED_FOOD_REPRODUCTION = 40;
+    private final int MIN_AGE_ADULT = 3;
+
+    private int age = 0;
+    private int foodLevel = 20; 
+
+    private Burrow burrow = null;
+    private Location burrowLoc = null;
+
+    private boolean isNight = false;
+    private boolean isSleeping = false;
+
+    Rabbit() {
+        amountOfRabbits += 1;
+    }
 
     @Override
     public void act(World world) {
-        System.out.println(foodLevel);
-        if(!world.getEmptySurroundingTiles().isEmpty() && !world.isNight()) {
-            world.move(this, getEmptyRandomLocations(world));
-            foodLevel--;
-            if(foodLevel <= 0) {
-                die(world);
-            }
-            if(burrow == null) {
+        isNight = world.isNight();
+        increaseAgeIfMorning(world);
+        if(!isNight) {
+            moveAndEat(world);
+            reproduce(world); 
+        } else {
+            moveToBurrow(world);
+        }
+    }
+
+    private void increaseAgeIfMorning(World world) {
+        if(world.getCurrentTime() == 0) {
+            age++;
+        }
+    }
+
+    private void moveToBurrow(World world) {
+        if(burrow != null  && world.isTileEmpty(burrowLoc)) {
+            world.move(this, burrowLoc);
+            isSleeping = true;
+        }
+    }
+
+    private void killRabbit(World world) {
+        world.delete(this);
+        amountOfRabbits--;
+    }
+
+    private void moveAndEat(World world) {
+        isSleeping = false;
+        if(!world.getEmptySurroundingTiles().isEmpty()) {
+            if(foodLevel > 0) {
+                world.move(this, getEmptyRandomLocations(world));
                 digHole(world);
-            }    
-        } 
-        if(world.isNight()) {
-            age += 1;
-            if(burrow != null) {
-                world.move(this, loc);
+                eat(world);
+                foodLevel--;
+            } else {
+                killRabbit(world);
             }
         }
     }
-    
-    public void die(World world) {
-        world.delete(this);
+
+    private void digHole(World world) {
+        if(burrow == null) {
+            burrowLoc = world.getLocation(this); 
+            if(!world.containsNonBlocking(burrowLoc)) {
+                burrow = new Burrow();
+                world.setTile(burrowLoc, burrow);
+            }
+        }
     }
 
-    public void digHole(World world) {
-        loc = world.getLocation(this);
-        burrow = new Burrow();
-        world.setTile(loc, burrow);
+    private void eat(World world) {
+        Location foodLoc = world.getLocation(this);
+        if(world.containsNonBlocking(foodLoc) && world.getNonBlocking(foodLoc) instanceof Grass) {
+            Grass grass = (Grass) world.getNonBlocking(foodLoc);
+            if(!grass.getDying()) {
+                world.delete(world.getNonBlocking(foodLoc));
+                foodLevel += FOOD_GAIN;
+            }
+        }
     }
+
+    private void reproduce(World world) {
+        if(age > MIN_AGE_ADULT && foodLevel > REQUIRED_FOOD_REPRODUCTION && amountOfRabbits >= 2) {
+            Location birthLocation = getEmptyRandomLocations(world);
+            if(birthLocation != null && world.isTileEmpty(birthLocation)) {
+                world.setTile(birthLocation, new Rabbit());
+                foodLevel -= FOOD_LOSS_REPRODUCTION;
+                amountOfRabbits++;
+            }
+        }
+    } 
 
     @Override
     public DisplayInformation getInformation() {
-        return new DisplayInformation(Color.DARK_GRAY, "rabbit-small");
-    }
+        String image;
+        if(age > MIN_AGE_ADULT) {
+            image = isSleeping ? "rabbit-sleeping" : "rabbit-large";
+        } else {
+            image = isSleeping ? "rabbit-small-sleeping" : "rabbit-small";
+        }
+        return new DisplayInformation(Color.DARK_GRAY, image);
+    }    
 
-    public Location getEmptyRandomLocations(World world) {
+    private Location getEmptyRandomLocations(World world) {
         Random r = new Random();
         Set<Location> neighbours = world.getEmptySurroundingTiles();
-        System.out.println(neighbours.size());
         if (neighbours.isEmpty()) {
             return null; 
         }
         List<Location> list = new ArrayList<>(neighbours);
         return list.get(r.nextInt(list.size())); 
-    }    
+    } 
     
 }

@@ -9,7 +9,7 @@ import itumulator.executable.Program;
 import itumulator.world.Location;
 import itumulator.world.World;
 
-public class Main {
+public class test {
     public static void main(String[] args) {
         try {
             Program p = createProgramFromFile("data/test.txt", 800, 500);
@@ -18,10 +18,6 @@ public class Main {
 
         } catch (FileNotFoundException fnfe) {
             System.out.println("Check path!");
-        } catch (NumberFormatException nfe) {
-            System.out.println("The first line of your file should be an integer!");
-        } catch (Exception e) {
-            System.out.println("Something unexpected happened! Message:" + e.getMessage() + " Class: " + e.getClass());
         }
     }
 
@@ -32,9 +28,8 @@ public class Main {
         Scanner scan = new Scanner(new File(path));
         Program p = new Program(Integer.parseInt(scan.nextLine()), display_size, delay);
 
-        int line_counter = 1;
+        int line_counter = 2;
         while (scan.hasNextLine()) {
-            line_counter++;
             try {
                 //get input
                 String input1 = scan.next();
@@ -49,9 +44,10 @@ public class Main {
                     int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
                     world.setTile(getRanLocWithoutType(type, p), class_type.getDeclaredConstructor().newInstance());
                 }
+                line_counter++;
 
             } catch (Exception e) {
-                System.out.println("Error: " + e.getClass() + ", skipping line " + line_counter + " in " + path);
+                System.out.println("Fejl i input, skipper linje " + line_counter + " i " + path);
             }
         }
         scan.close();
@@ -68,6 +64,7 @@ public class Main {
                 }
             }
         }
-        return empty_location_list.get((new Random()).nextInt(empty_location_list.size()));
+        Random ran = new Random();
+        return empty_location_list.get(ran.nextInt(empty_location_list.size()));
     }
 }
