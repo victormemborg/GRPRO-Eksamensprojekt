@@ -20,7 +20,6 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     private int age = 0;
     private int foodLevel = 20;
     private int energyLevel; 
-    private int MAX_ENERGY = 100 - age * 2; //energy level decreases with age
 
     private Burrow burrow = null;
     private Location burrowLoc = null;
@@ -53,14 +52,14 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     }
 
     private int getMaxEnergy() {
-        MAX_ENERGY = 100 - age * 2; 
+        int MAX_ENERGY = 100 - age * 2; 
         return MAX_ENERGY;
     }
 
 
     //move the rabbit to its burrow
     private void moveToBurrow(World world) {
-        if(burrow != null  && world.isTileEmpty(burrowLoc) && energyLevel < 50) {
+        if(burrow != null  && world.isTileEmpty(burrowLoc)) {
             world.move(this, burrowLoc);
             isSleeping = true;
             while(energyLevel < getMaxEnergy()) {
@@ -83,8 +82,6 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
                 eat(world);
                 foodLevel--;
                 energyLevel--;
-                System.out.println("Rabbit energy: " + energyLevel);
-                System.out.println("Rabbit age: " + age);
             } else {
                 killRabbit(world);
             }
