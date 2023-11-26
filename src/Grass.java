@@ -16,18 +16,18 @@ public class Grass implements Actor, DynamicDisplayInformationProvider, NonBlock
     @Override
     public void act(World world){
         Random ran = new Random();
-        //Maybe dø
-        if (ran.nextInt(20) >= 19) {
+        //Death mechanic
+        if (ran.nextInt(20) == 19) {
             dying = true;
         }
         if (dying) {
-            time_dying = time_dying + 1;
+            time_dying++;
         }
         if (time_dying > 4) {
             world.delete(this);
         }
 
-        //Maybe spread
+        //Spread mechanic
         ArrayList<Location> list = new ArrayList<>();
         for (Location l : world.getSurroundingTiles()) {
             if (!world.containsNonBlocking(l)) {
