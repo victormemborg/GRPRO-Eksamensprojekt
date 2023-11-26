@@ -37,8 +37,9 @@ public class Main {
             line_counter++;
             try {
                 //get input
-                String input1 = scan.next();
-                int input2 = Integer.parseInt(scan.next());
+                String line = scan.nextLine();
+                String input1 = line.split(" ")[0];
+                int input2 = Integer.parseInt(line.split(" ")[1]);
                 //Determine class
                 String class_name = input1.substring(0, 1).toUpperCase() + input1.substring(1, input1.length());
                 Class<?> class_type = Class.forName(class_name);
