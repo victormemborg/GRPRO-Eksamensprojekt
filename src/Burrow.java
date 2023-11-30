@@ -6,7 +6,6 @@ import java.util.Random;
 import java.awt.Color;
 
 public class Burrow implements Actor, NonBlocking, DynamicDisplayInformationProvider {
-    World world;
     Random r = new Random();
     boolean big_hole = r.nextBoolean();
 

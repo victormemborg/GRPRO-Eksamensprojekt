@@ -3,6 +3,9 @@ package itumulator.display.utility;
 import java.awt.Polygon;
 import itumulator.world.Location;
 
+/**
+ * Utility for producing isomorphic coordinates (in the form of polygons and points)
+ */
 public final class IsomorphicUtility {
     public static Polygon getIsoPolygon(int x, int y, int width, int height){
         Polygon p = new Polygon();

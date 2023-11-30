@@ -9,7 +9,10 @@ import itumulator.display.utility.IsomorphicCoordinateFactory;
 import itumulator.display.utility.Point2DInt;
 import itumulator.world.World;
 
-public class DayNightAnimation extends Animation{
+/**
+ * A special case animation used to show the sun / moon cycle.
+ */
+public class DayNightAnimation extends Animation {
     private final double IMAGE_HEIGHT_PERCENT = 0.15;
     private final double Y_POS_PERCENT = 0.2;
     private BufferedImage img;

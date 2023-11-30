@@ -12,6 +12,9 @@ import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.NonBlocking;
 
+/**
+ * Wrapping class to associate more information with objects than simply their display information provider.
+ */
 public class ObjectInformation {
     private Object obj;
     private DisplayInformation di;
@@ -19,7 +22,6 @@ public class ObjectInformation {
     private boolean isGroundObject;
     private BufferedImage image;
     private Color color;
-    private AffineTransformOp rotation;
     private int direction;
 
     public ObjectInformation(Object obj) {
@@ -77,6 +79,5 @@ public class ObjectInformation {
     private void setupRotation(){
         AffineTransform tx = new AffineTransform();
         tx.rotate(Math.toRadians(direction), image.getWidth() / 2, image.getHeight() / 2);
-        rotation = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
     }
 }

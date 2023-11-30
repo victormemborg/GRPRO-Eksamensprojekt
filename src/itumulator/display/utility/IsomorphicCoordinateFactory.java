@@ -4,6 +4,9 @@ import java.awt.image.BufferedImage;
 
 import itumulator.world.Location;
 
+/**
+ * Utility to generate iso perspective coordinates for squares.
+ */
 public class IsomorphicCoordinateFactory {
         /* This is Singleton pattern */
         private static IsomorphicCoordinateFactory instance;
