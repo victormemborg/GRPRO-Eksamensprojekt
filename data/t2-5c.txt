@@ -1,0 +1,4 @@
+25
+bear 1 (3,5)
+grass 10-15
+rabbit 5-7
