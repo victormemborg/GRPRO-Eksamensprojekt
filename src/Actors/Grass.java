@@ -1,3 +1,4 @@
+package Actors;
 import itumulator.world.NonBlocking;
 import itumulator.world.World;
 import itumulator.executable.DisplayInformation;
@@ -9,7 +10,7 @@ import java.awt.Color;
 import java.util.Random;
 import java.util.ArrayList;
 
-public class Grass implements Actor, DynamicDisplayInformationProvider, NonBlocking {
+public class Grass extends Foliage implements Actor, DynamicDisplayInformationProvider, NonBlocking {
     boolean dying = false;
     int time_dying = 0;
 
