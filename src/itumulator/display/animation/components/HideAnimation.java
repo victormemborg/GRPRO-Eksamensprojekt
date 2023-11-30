@@ -4,13 +4,16 @@ import itumulator.display.animation.ObjectInformation;
 import itumulator.display.utility.IsomorphicCoordinateFactory;
 import itumulator.world.Location;
 
-public class HideAnimation extends Animation{
+/**
+ * An animation that makes an object dissapear (used on 'remove' within {@link World}).
+ */
+public class HideAnimation extends Animation {
+    int step;    
+
     public HideAnimation(ObjectInformation oi, Location location, int animationLength) {
         super(oi, location, animationLength);
         step = 255/animationLength;
     }
-
-    int step;
 
     @Override
     protected AnimationFrame getFrame(int index) {

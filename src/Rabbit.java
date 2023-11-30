@@ -12,13 +12,14 @@ import itumulator.world.*;
 
 public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     static int amountOfRabbits;
-    private final int FOOD_GAIN = 5;
-    private final int FOOD_LOSS_REPRODUCTION = 25;
-    private final int REQUIRED_FOOD_REPRODUCTION = 40;
-    private final int MIN_AGE_ADULT = 3;
+    private final int FOOD_GAIN = 5; 
+    private final int FOOD_LOSS_REPRODUCTION = 25; 
+    private final int REQUIRED_FOOD_REPRODUCTION = 40; 
+    private final int MIN_AGE_ADULT = 3; 
 
     private int age = 0;
-    private int foodLevel = 20; 
+    private int foodLevel = 20;
+    private int energyLevel; 
 
     private Burrow burrow = null;
     private Location burrowLoc = null;
@@ -27,14 +28,15 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     private boolean isSleeping = false;
 
     Rabbit() {
-        amountOfRabbits += 1;
+        amountOfRabbits += 1; 
+        this.energyLevel = 100; 
     }
 
     @Override
     public void act(World world) {
         isNight = world.isNight();
-        increaseAgeIfMorning(world);
         if(!isNight) {
+            increaseAgeIfMorning(world);
             moveAndEat(world);
             reproduce(world); 
         } else {
@@ -42,16 +44,27 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
         }
     }
 
+    //Age increments everyday
     private void increaseAgeIfMorning(World world) {
         if(world.getCurrentTime() == 0) {
             age++;
         }
     }
 
+    private int getMaxEnergy() {
+        int MAX_ENERGY = 100 - age * 2; 
+        return MAX_ENERGY;
+    }
+
+
+    //move the rabbit to its burrow
     private void moveToBurrow(World world) {
         if(burrow != null  && world.isTileEmpty(burrowLoc)) {
             world.move(this, burrowLoc);
             isSleeping = true;
+            while(energyLevel < getMaxEnergy()) {
+                energyLevel += 10;
+            }
         }
     }
 
@@ -63,11 +76,12 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
     private void moveAndEat(World world) {
         isSleeping = false;
         if(!world.getEmptySurroundingTiles().isEmpty()) {
-            if(foodLevel > 0) {
+            if(foodLevel > 0 && energyLevel > 0) {
                 world.move(this, getEmptyRandomLocations(world));
                 digHole(world);
                 eat(world);
                 foodLevel--;
+                energyLevel--;
             } else {
                 killRabbit(world);
             }
@@ -125,6 +139,5 @@ public class Rabbit implements Actor, DynamicDisplayInformationProvider{
         }
         List<Location> list = new ArrayList<>(neighbours);
         return list.get(r.nextInt(list.size())); 
-    } 
-    
+    }  
 }

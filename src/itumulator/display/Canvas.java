@@ -2,11 +2,14 @@ package itumulator.display;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
+
 import javax.swing.*;
 
 import itumulator.display.animation.AnimationFactory;
@@ -24,17 +27,20 @@ import itumulator.world.World;
  * Provides a canvas painting the various objects within our world. This is not relevant to continue the project.
  */
 public class Canvas extends JPanel {
-    private final static Color COLOR_EMPTY = Color.WHITE;
-    private final static Color COLOR_NON_PAINTABLE = Color.GRAY;
-    private final int MS_PER_FRAME = 4;
-    private World world;
+    private final static Color COLOR_EMPTY = Color.WHITE; // used as the color representing empty vlaues
+    private final static Color COLOR_NON_PAINTABLE = Color.GRAY; // used as as the color for elements not associated with a color
+    private final static int MS_PER_FRAME = 4; 
+    private final static int SLOW_DOWN_FRAMES = 6; // used to reduce the queued amount of images (for render)
+    private final static int IMAGE_CACHE_SIZE = 100; // to avoid memory overflow, correct this one
+    private World world; 
     private Graphics graphics;
-    private Image img;
     private int size;
     private boolean isomorphic;
     private BufferedImage isoBackgroundImage;
     private AnimationFactory af;
     private java.util.Map<Class, Color> colorMap;
+    List<Image> queue; // queue of images to render
+    private boolean lastView; // used to clear queue of images
     private ExecutorService executor;
     
     public Canvas(World world, int size, boolean startIso) {
@@ -45,14 +51,25 @@ public class Canvas extends JPanel {
         setMaximumSize(d);
         setMinimumSize(d);
         setSize(d);
+
         this.world = world;
         this.size = size;
         this.af = new AnimationFactory(world);
         new Random();
         colorMap = new java.util.HashMap<>();
+        queue = new LinkedList<>();
         BufferedImage img = ImageResourceCache.Instance().getImage("base");
         isoBackgroundImage = ImageUtility.getScaledImage(img, IsomorphicCoordinateFactory.Instance().getDisplaySize(), IsomorphicCoordinateFactory.Instance().getDisplaySize());
         setIsomorphic(startIso);
+
+        // 1 main thread
+        // 1 simulator thread
+        // 1 java thread
+        // 1 overlay rendering thread
+        // 1 buffer for safety
+        // rest for rendering
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        executor = Executors.newFixedThreadPool(availableProcessors > 5 ? availableProcessors - 5 : 3);
     }
 
     /**
@@ -68,13 +85,15 @@ public class Canvas extends JPanel {
      */
     public void setIsomorphic(boolean isomorphic) {
         this.isomorphic = isomorphic;
+        // in case we are swapping view we want to clear the queue of images.
+        if(lastView != isomorphic) {
+            lastView = isomorphic;
+            queue.clear();
+        }
+        // and request an update.
         if (isomorphic){
             af.requestUpdate();
         }
-    }
-
-    private void setColor(Class c, Color color) {
-        colorMap.put(c, color);
     }
 
     /**
@@ -83,7 +102,7 @@ public class Canvas extends JPanel {
      * @param di the {@link DisplayInformation} to associate the type of object with.
      */
     public void setDisplayInformation(Class cl, DisplayInformation di){
-        setColor(cl, di.getColor());
+        colorMap.put(cl, di.getColor());
         af.setDisplayInformation(cl, di);
     }
 
@@ -91,41 +110,43 @@ public class Canvas extends JPanel {
         this.paintImage(0);
     }
 
+    /**
+     * Paints the proper image depending on whether we are showing grid or isomorphic view.
+     * @param delay
+     */
     public void paintImage(int delay) {
+
         if (isomorphic){
-            // 1 main thread
-            // 1 simulator thread
-            // 1 java thread
-            // 1 overlay rendering thread
-            // 1 buffer for safety
-            // rest for rendering
-            executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()-5);
             try {
+                // Queue all images for parallel execution
                 List<Future<BufferedImage>> queue = executor.invokeAll(af.getImages(delay == 0 ? 1 : delay/MS_PER_FRAME));
                 
+                /** draw each of the images with the appropriate background using isomorphic helpers */
                 for (Future<BufferedImage> future : queue) {
-                    // Potentially could be moved out
-                    // ------
-                    img = createImage(size, size);
+                    Image img = createImage(size, size);
                     graphics = img.getGraphics();
                     graphics.drawImage(isoBackgroundImage, 0,IsomorphicCoordinateFactory.Instance().getDisplaySize()/2, null);
                     graphics.setColor(new Color(150, 210, 131));
                     graphics.fillPolygon(IsomorphicUtility.getIsoPolygon((IsomorphicCoordinateFactory.Instance().getDisplaySize()/2), IsomorphicCoordinateFactory.Instance().getDisplaySize()/2, IsomorphicCoordinateFactory.Instance().getDisplaySize()/2, IsomorphicCoordinateFactory.Instance().getDisplaySize()/4));
-                    // -------
-                    
                     graphics.drawImage(future.get(), 0, 0,null);
                     
-                    // Currently sleeping delays the rendering a LOT
-                    // would need to sleep a "MAXIMUM" amount of time
-                    // and make sure to have a catch-up mechanism
-                    //Thread.sleep(MS_PER_FRAME);
-                    repaint();
+                    this.queue.add(img);
+                    repaint(); // bad practice, but appears to help rendering time on windows machines
+
                 }
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                // This can happen because we start tasks and
+                // futures from within the simulator thread
+                // and it can't stacktrace and locate
+                // the exception error
+                if (e.getMessage() != null){
+                    System.out.println("Canvas thread error: " + e.getMessage() );
+                }
             }
         } else {
-            img = createImage(size, size);
+            /** For the non isomorphic view we simply use the colors to paint each square */
+            Image img = createImage(size, size);
+            this.queue.add(img);
             graphics = img.getGraphics();
 
             graphics.setColor(COLOR_EMPTY);
@@ -135,47 +156,37 @@ public class Canvas extends JPanel {
                 for (int x = 0; x < tiles; x++) {
                     Location l = new Location(x, y);
                     Object o = world.getTile(l);
-                    drawDebugView(l, o);
+                    drawGridElement(l, o);
                 }
             }
             repaint();
         }
     }
 
-    private void drawDebugView(Location l, Object o) {
+    /**
+     * Draws each element as a square
+     * @param l location to write the element on
+     * @param o the object to draw (used to determine color)
+     */
+    private void drawGridElement(Location l, Object o) {
         int tiles = world.getSize();
         int pixelSize = size / tiles;
         Point2DInt pixelPoint;
         pixelPoint = new Point2DInt(pixelSize * l.getX(), pixelSize * l.getY());
 
-        int[][] locations = new int[][] {
-                { l.getX(), l.getY() - 1 },
-                { l.getX(), l.getY() + 1 },
-                { l.getX() - 1, l.getY() },
-                { l.getX() + 1, l.getY() },
-        };
-
         graphics.setColor(new Color(250, 250, 250));
         graphics.fillRect(pixelPoint.getX(), pixelPoint.getY(), pixelSize, pixelSize);
-
-
         
+        // if the element is nonBlocking, draw it as a flat square
         if (world.containsNonBlocking(l) && world.getNonBlocking(l) != o)
-            drawDebugView(l, world.getNonBlocking(l));
+            drawGridElement(l, world.getNonBlocking(l));
 
-        // for (int[] loc : locations) {
-        //     if (loc[0] < 0 || loc[0] >= tiles || loc[1] < 0 || loc[1] >= tiles)
-        //         continue;
-        //     Object on = world.getLowestTile(new Location(loc[0], loc[1]));
-        //     if (on != null && o != null && on.getClass() == o.getClass()) {
-        //         break;
-        //     }
-        // }
-
+        // if a dynamic display information provider is used, dynamically determine the color
         if (o instanceof DynamicDisplayInformationProvider){
                 setDisplayInformation(o.getClass(), ((DynamicDisplayInformationProvider)o).getInformation());
         }
 
+        // otherwise, we simply draw it (if it is given a color)
         if (o != null){
             if (colorMap.containsKey(o.getClass())) {
                 graphics.setColor(colorMap.get(o.getClass()));
@@ -190,10 +201,37 @@ public class Canvas extends JPanel {
         }
     }
 
+    /**
+     * Override of the paintComponent to deplete from the queue of images left to render.
+     */
     @Override
     protected void paintComponent(Graphics g) {
-        if (img != null)
+        if(!queue.isEmpty()){
+            reduceImgQueue(IMAGE_CACHE_SIZE);
+            Image img = queue.get(0);
+            if(queue.size() > 1) queue.remove(0);
             g.drawImage(img, (this.getWidth()/2)-(size/2), (this.getHeight()/2)-(size/2), null);
+        }
+            
+    }
+
+    /**
+     * To speed up the process of pausing, you can reduce the amount of remaining frames (according to SLOW_DOWN_FRAMES).
+     */
+    public void reduceImgQueue(){
+        reduceImgQueue(SLOW_DOWN_FRAMES);
+    }
+
+    private void reduceImgQueue(int amount){
+        int size = queue.size();
+        if( size > amount*2){
+            List<Image> imgs = new LinkedList<>();
+            int nr = (size / (amount));
+            for(int i = 0; i < size; i += nr){
+                imgs.add(queue.get(i));
+            }
+            queue = imgs;
+        }
     }
 
 }

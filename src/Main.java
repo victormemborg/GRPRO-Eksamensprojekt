@@ -26,7 +26,8 @@ public class Main {
     }
 
     /*
-     dadadaaw
+     Returns an instances of Program with the specifications given by
+     its arguments and the specified txt-file
     */
     private static Program createProgramFromFile(String path, int display_size, int delay) throws FileNotFoundException{
         Scanner scan = new Scanner(new File(path));
@@ -36,14 +37,15 @@ public class Main {
         while (scan.hasNextLine()) {
             line_counter++;
             try {
-                //get input
-                String input1 = scan.next();
-                int input2 = Integer.parseInt(scan.next());
+                //Get input
+                String line = scan.nextLine();
+                String input1 = line.split(" ")[0];
+                int input2 = Integer.parseInt(line.split(" ")[1]);
                 //Determine class
                 String class_name = input1.substring(0, 1).toUpperCase() + input1.substring(1, input1.length());
                 Class<?> class_type = Class.forName(class_name);
 
-                //create specified number of instances
+                //Create specified number of instances
                 World world = p.getWorld();
                 for (int i = 0 ; i < input2 ; i++) {
                     int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
@@ -58,6 +60,10 @@ public class Main {
         return p;
     }
 
+    /*
+     Returns a random location that is not occupied by any object of 
+     the given type (NonBlocking: 0 - Blocking: 1)
+    */
     private static Location getRanLocWithoutType(int type, Program p) {
         ArrayList<Location> empty_location_list = new ArrayList<>();
         Object[][][] tiles = p.getWorld().getTiles();

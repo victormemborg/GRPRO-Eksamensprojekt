@@ -1,7 +1,5 @@
 package itumulator.simulator;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -80,6 +78,7 @@ public class Simulator {
                 ((Actor)o).act(world);
             }
         }
+        entities = null; // to avoid memory leak
         // Here removed painting cycle (i.e., canvas.paintImage()) as I believe it was unecessary.
         canvas.paintImage(delay); //repaint according to updated simulation.
     }
@@ -115,6 +114,7 @@ public class Simulator {
     public synchronized void stop(){
         if(!isRunning()) throw new IllegalStateException("No current execution to stop");
         executor.shutdownNow();
+        canvas.reduceImgQueue();
         running.set(false);
     }
 
@@ -130,16 +130,21 @@ public class Simulator {
         // Optionally to reduce the memory of creating a new executor etc. every time, we should consider making
         // a pausable runnable, this is more in line with concurrency architecture, instead of Hard
         // interrupting a thread
+        if(executor != null) executor.shutdownNow();
         executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 while (true){
-                    if(Thread.interrupted()) return;
-                    simulate();
-                    if (delay == 0)
-                    continue;
                     try {
+                        if(!isRunning()){
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                        simulate();
+                        if (delay == 0){
+                            continue;
+                        }
                         Thread.sleep(delay);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
