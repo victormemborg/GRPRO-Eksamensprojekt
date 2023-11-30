@@ -1,3 +1,4 @@
+package Actors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -10,7 +11,7 @@ import itumulator.simulator.*;
 import itumulator.world.*;
 
 
-public class Rabbit implements Actor, DynamicDisplayInformationProvider{
+public class Rabbit extends Herbivore implements Actor, DynamicDisplayInformationProvider {
     static int amountOfRabbits;
     private final int FOOD_GAIN = 5; 
     private final int FOOD_LOSS_REPRODUCTION = 25; 

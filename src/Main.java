@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 
+import HelperMethods.Help;
+import Actors.*;
+
 import itumulator.executable.Program;
 import itumulator.world.Location;
 import itumulator.world.World;

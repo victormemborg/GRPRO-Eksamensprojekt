@@ -1,3 +1,5 @@
+package Actors;
+
 import itumulator.world.*;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
@@ -22,4 +24,7 @@ public class Burrow implements Actor, NonBlocking, DynamicDisplayInformationProv
             return new DisplayInformation(Color.black, "hole-small");
         }
     }
+
+    
+
 }
