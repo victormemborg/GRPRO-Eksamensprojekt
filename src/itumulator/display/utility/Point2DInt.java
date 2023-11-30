@@ -1,5 +1,8 @@
 package itumulator.display.utility;
 
+/**
+ * Utility class to produce points 
+ */
 public class Point2DInt {
     private int x, y;
 
