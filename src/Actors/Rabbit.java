@@ -28,7 +28,7 @@ public class Rabbit extends Herbivore implements Actor, DynamicDisplayInformatio
     private boolean isNight = false;
     private boolean isSleeping = false;
 
-    Rabbit() {
+    public Rabbit() {
         amountOfRabbits += 1; 
         this.energyLevel = 100; 
     }
