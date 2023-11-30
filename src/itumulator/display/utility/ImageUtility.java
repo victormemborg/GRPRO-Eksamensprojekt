@@ -5,6 +5,9 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
+/**
+ * Utility for scaling images.
+ */
 public final class ImageUtility {
     public static BufferedImage getScaledImage(Image img, int w, int h) {
         BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TRANSLUCENT);

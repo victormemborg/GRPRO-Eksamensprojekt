@@ -8,8 +8,11 @@ import itumulator.display.utility.ImageResourceCache;
 import itumulator.display.utility.ImageUtility;
 import itumulator.display.utility.IsomorphicCoordinateFactory;
 
+/**
+ * A class to support the drawing of clouds
+ */
 public class Cloud {
-    private final double IMAGE_HEIGHT_PERCENT = 0.1;
+    private final double IMAGE_HEIGHT_PERCENT = 0.12;
     private final double SPAWN_MIN_Y_PERCENT = 0;
     private final double SPAWN_MAX_Y_PERCENT = 0.4;
     private final double SPAWN_MIN_SPEED = 0.2; 

@@ -4,6 +4,9 @@ import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
+/**
+ * Utility to produce the display of day/night cycle
+ */
 public class DayNightHelper {
     private JLabel dayNightLabel;
     private boolean icon = false;

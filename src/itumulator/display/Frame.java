@@ -1,7 +1,9 @@
 package itumulator.display;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -60,10 +62,13 @@ public class Frame extends JFrame {
         layeredPane.add(uiPanel, JLayeredPane.POPUP_LAYER);
 
         textField = new JTextField();
+        textField.setBackground(null);
+        textField.setBorder(null);
+        textField.setFont(new Font("CourierNew", Font.PLAIN, 16));
         textField.setText("Steps " + simulator.getSteps());
+        
         textField.setEditable(false);
-        int preferredWidth = textField.getFontMetrics(textField.getFont()).stringWidth(textField.getText()) + 5; // Add padding
-        textField.setPreferredSize(new Dimension(preferredWidth, textField.getPreferredSize().height));
+        setTextFieldWidth(textField);
 
         // Initialize play/pause button
         JButton runButton = new JButton("Play/Pause");
@@ -84,24 +89,27 @@ public class Frame extends JFrame {
             if (!simulator.isRunning())
                 simulator.simulate();
         });
-        
+
+        // Initialize DayNightLabel
+        JLabel dayNightLabel = dayNightHelper.initialize(UI_HEIGHT);
+        dayNightLabel.setVisible(!startIso);
+
         // Initialize Swap Render Button
         JButton swapButton = new JButton("Swap");
         swapButton.addActionListener((e) -> {
             canvas.setIsomorphic(!canvas.isIsomorphic());
             if (canvas.isIsomorphic()){
                 overlayCanvas.startRender();
+                dayNightLabel.setVisible(false);
             } else {
                 overlayCanvas.stopRender();
+                dayNightLabel.setVisible(true);
             }
             canvas.paintImage();
         });
         setButtonImage(runButton, "play");
         setButtonImage(stepButton, "step");
         setButtonImage(swapButton, "basic-display");
-
-        // Initialize DayNightLabel
-        JLabel dayNightLabel = dayNightHelper.initialize(UI_HEIGHT);
 
         uiPanel.setBounds(0, 0, pixel_size, UI_HEIGHT+20);
         uiPanel.add(textField);
@@ -112,14 +120,20 @@ public class Frame extends JFrame {
         uiPanel.setOpaque(false);
     }
 
+    
     public void updateDayNightLabel(boolean isDaytime) {
         dayNightHelper.update(isDaytime);
     }
 
+    private void setTextFieldWidth(JTextField field){
+        int preferredWidth = textField.getFontMetrics(textField.getFont()).stringWidth(textField.getText()) + 5; // Add padding
+        field.setSize(new Dimension(preferredWidth, textField.getPreferredSize().height));
+    }
+
     public void updateStepLabel(int steps) {
         textField.setText("Steps " + steps);
-        int preferredWidth = textField.getFontMetrics(textField.getFont()).stringWidth(textField.getText()) + 5; // Add padding
-        textField.setPreferredSize(new Dimension(preferredWidth, textField.getPreferredSize().height));
+
+        setTextFieldWidth(textField);
         textField.setSize(textField.getPreferredSize());
         textField.revalidate();
         textField.repaint();
