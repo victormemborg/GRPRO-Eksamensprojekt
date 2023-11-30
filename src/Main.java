@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 
+import HelperMethods.Help;
+import Actors.*;
+
 import itumulator.executable.Program;
 import itumulator.world.Location;
 import itumulator.world.World;
@@ -43,7 +46,8 @@ public class Main {
                 int input2 = Integer.parseInt(line.split(" ")[1]);
                 //Determine class
                 String class_name = input1.substring(0, 1).toUpperCase() + input1.substring(1, input1.length());
-                Class<?> class_type = Class.forName(class_name);
+                Class<?> class_type = Class.forName("Actors." + class_name);
+                System.out.println(class_name);
 
                 //Create specified number of instances
                 World world = p.getWorld();
