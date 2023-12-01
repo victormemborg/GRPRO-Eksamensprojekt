@@ -1,4 +1,4 @@
 package Actors;
-public class Carnivore extends Animals {
-    
+public interface Carnivore  {
+    abstract void consumeCarcas();
 }

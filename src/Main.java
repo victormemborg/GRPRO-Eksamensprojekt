@@ -14,7 +14,7 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/test.txt", 800, 500);
+            Program p = createProgramFromFile("data/test.txt", 800, 30);
             p.show();
             //p.run();
 
@@ -24,6 +24,7 @@ public class Main {
             System.out.println("The first line of your file should be an integer!");
         } catch (Exception e) {
             System.out.println("Something unexpected happened! Message:" + e.getMessage() + " Class: " + e.getClass());
+            System.out.println(e.getCause());
         }
     }
 
