@@ -32,9 +32,7 @@ public class Help {
         int endY = Math.min(world.getSize() - 1, l.getY() + radius);
 
         for (int x = startX; x <= endX; x++) {
-            System.out.println("x: " + x);
             for (int y = startY; y <= endY; y++) {
-                System.out.println("y: " + y);
                 if (world.isTileEmpty(new Location(x, y)) ) {
                     emptyTiles.add(new Location(x, y));
                 }

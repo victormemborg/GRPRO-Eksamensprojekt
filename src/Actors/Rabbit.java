@@ -9,8 +9,6 @@ import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.*;
 
 public class Rabbit extends Animal implements Herbivore, DynamicDisplayInformationProvider {
-    World world;
-
     public Rabbit() {
         super.max_hp = 100;
         super.current_hp = 100.00;
@@ -18,7 +16,6 @@ public class Rabbit extends Animal implements Herbivore, DynamicDisplayInformati
         super.current_energy = 100.00;
         super.maturity_age = 3;
         super.damage = 1;
-        this.world = super.world;
 
         super.req_energy_reproduction = 0.6;
 
@@ -28,14 +25,15 @@ public class Rabbit extends Animal implements Herbivore, DynamicDisplayInformati
     @Override
     public void act(World world) {
         this.world = world;
-        increaseAge(world);
+        increaseAge();
         move();
-        // reproduce();
+        reproduce();
         // sleep();
     }
 
     public void move() {
         if (current_energy > 0 && !world.getEmptySurroundingTiles().isEmpty()) {
+            current_energy -= energy_loss_move;
             // check if there is a carnivore nearby
             Set<Location> neighbours = world.getSurroundingTiles(2); // magic number needs to be a field
             for (Location l : neighbours) {
@@ -47,16 +45,14 @@ public class Rabbit extends Animal implements Herbivore, DynamicDisplayInformati
                     Location rabbitLoc = world.getLocation(this);
                     // move opposite direction of the carnivore
                     getEscapeRoute(carnivoreLoc, rabbitLoc, 1);
-                    System.out.println("Escape route");
-                }
+                } 
                 Location loc = world.getLocation(this);
                 if (Help.getRandomNearbyEmptyTile(world, loc, 1) != null) {
                     world.move(this, Help.getRandomNearbyEmptyTile(world, loc, 1));
-                    System.out.println("Denne kørte");
-                    // print the thread id of the current thread
-                    System.out.println("Thread id: " + Thread.currentThread().getId());
                 }
             }
+        } else if(current_energy <= 0) {
+            die(this);
         }
     }
 

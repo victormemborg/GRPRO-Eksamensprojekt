@@ -20,8 +20,10 @@ public abstract class Animal implements Actor {
     double req_energy_reproduction;
 
     int age = 0;
+    int energy_loss_move = 1;
     double energy_loss_reproduction = 0.6;
     double hp_reproduction = 0.6;
+    boolean has_reproduced_today = false;
 
     // Home home;
     boolean is_sleeping = false;
@@ -38,23 +40,22 @@ public abstract class Animal implements Actor {
         Animal attacker = this;
         victim.current_hp = victim.getHp() - attacker.getDamage();
         if (victim.getHp() <= 0) {
-            victim.die();
+            die(victim);
         }
     }
 
-    void increaseAge(World world) {
+    void increaseAge() {
         if (world.getCurrentTime() == 0) {
             age++;
+            has_reproduced_today = false;
         }
     }
 
     // This method is responsible for the reproduction process of the animal.
     void reproduce() {
-        // Check if the current animal can reproduce.
         if (canReproduce(this)) {
             // Get the surrounding locations.
             Set<Location> neighbours = world.getSurroundingTiles(1);
-            // Iterate over each location.
             for (Location n : neighbours) {
                 // Try to find a partner at the given location.
                 Optional<Animal> partner = getPartner(n);
@@ -65,46 +66,43 @@ public abstract class Animal implements Actor {
     }
 
     private boolean canReproduce(Animal animal) {
-        return animal.getIsMature() && animal.current_energy > animal.req_energy_reproduction;
+        return animal.getIsMature() && animal.current_energy > animal.req_energy_reproduction && !has_reproduced_today;
     }
 
-    // This method tries to find a partner for reproduction at the given location.
+    //This method tries to find a partner for reproduction at the given location.
     private Optional<Animal> getPartner(Location location) {
-        // Get the object at the given location.
         Object nearbyObject = world.getTile(location);
-        // Check if the object is an animal of the same class.
         if (nearbyObject instanceof Animal && this.getClass() == nearbyObject.getClass()) {
             Animal partner = (Animal) nearbyObject;
-            // Check if the partner can reproduce.
             if (canReproduce(partner)) {
-                // If the partner can reproduce, return it.
                 return Optional.of(partner);
             }
         }
-        // If no suitable partner was found, return an empty Optional.
         return Optional.empty();
     }
 
     // This method creates a baby animal.
     private void createBaby(Animal partner) {
-        // The partner loses some energy in the reproduction process.
+        //Loss of energy for both parents.
         partner.current_energy *= partner.energy_loss_reproduction;
+        this.current_energy *= this.energy_loss_reproduction;
         try {
             // Create a new instance of the animal class.
             Animal baby = this.getClass().getDeclaredConstructor().newInstance();
             // Place the baby in a random nearby empty location.
             world.setTile(Help.getRandomNearbyEmptyTile(world, world.getLocation(partner), 2), baby);
+            partner.has_reproduced_today = true;
+            this.has_reproduced_today = true;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                | NoSuchMethodException e) {
-            e.getMessage();
+                | NoSuchMethodException ignore) {
         }
     }
 
-    void die() {
+    void die(Animal animal) {
         // Instantier carcass
         // world.setTile(world.getLocation(this), 0), carcass);
 
-        world.delete(this);
+        world.delete(animal);
     }
 
     // Generates an escape route for the prey

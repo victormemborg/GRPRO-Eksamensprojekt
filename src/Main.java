@@ -14,9 +14,9 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/test.txt", 800, 30);
+            Program p = createProgramFromFile("data/test.txt", 800, 50);
             p.show();
-            //p.run();
+            p.run();
 
         } catch (FileNotFoundException fnfe) {
             System.out.println("Check path!");

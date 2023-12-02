@@ -4,34 +4,33 @@ import java.awt.Color;
 
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
-import itumulator.simulator.Actor;
-import itumulator.world.NonBlocking;
 import itumulator.world.World;
 
-public class Berry extends Foliage implements Actor, DynamicDisplayInformationProvider, NonBlocking{
-    boolean eaten;
-    int regrowTime = 6;
-    
+public class Berry extends Foliage implements DynamicDisplayInformationProvider {
+    private boolean eaten;
+    private int regrowTime = 12;
 
-    public Berry(){
+    public Berry() {
         this.eaten = false;
-    }
-
-    public Berry(boolean eaten){
-        this.eaten = eaten;
     }
 
     @Override
     public void act(World world){
-
-        //Regrow mechanic
-        if(eaten && world.isDay()){ 
+        if (eaten){
             regrowTime--;
+            if (regrowTime == 0){
+                eaten = false;
+                regrowTime = 12;
+            }
         }
-        if(regrowTime == 0){
-            this.eaten = false;
-            regrowTime = 6;
-        }
+    }
+
+    public void eatBerry(){
+        eaten = true;
+    }
+
+    public boolean isEaten() {
+        return eaten;
     }
 
     @Override
