@@ -73,11 +73,15 @@ public abstract class Animal implements Actor {
                 continue;
             }
             createBaby();
-            this.current_energy *= energy_loss_reproduction;
-            partner.current_energy *= energy_loss_reproduction;
-            this.has_reproduced_today = true;
-            partner.has_reproduced_today = true;
+            setReproduceProperties(this, partner);
         }
+    }
+
+    private void setReproduceProperties(Animal engager, Animal partner) {
+        engager.current_energy *= energy_loss_reproduction;
+        partner.current_energy *= energy_loss_reproduction;
+        engager.has_reproduced_today = true;
+        partner.has_reproduced_today = true;
     }
 
     private void createBaby() {
