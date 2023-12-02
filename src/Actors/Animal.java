@@ -47,54 +47,49 @@ public abstract class Animal implements Actor {
     void increaseAge() {
         if (world.getCurrentTime() == 0) {
             age++;
-            has_reproduced_today = false;
+            has_reproduced_today = false; //might have to be moved to a different place
         }
     }
 
-    // This method is responsible for the reproduction process of the animal.
-    void reproduce() {
-        if (canReproduce(this)) {
-            // Get the surrounding locations.
-            Set<Location> neighbours = world.getSurroundingTiles(1);
-            for (Location n : neighbours) {
-                // Try to find a partner at the given location.
-                Optional<Animal> partner = getPartner(n);
-                // If a partner is found, create a baby.
-                partner.ifPresent(this::createBaby);
+    //curently it breeds with itself
+    public void reproduce() {
+        if (!getIsMature()) {
+            return;
+        }
+        Set<Location> neighbours = world.getSurroundingTiles();
+        for (Location n : neighbours) {
+            Object nearbyObject = world.getTile(n);
+            if (!(nearbyObject instanceof Animal)) {
+                continue;
             }
-        }
-    }
-
-    private boolean canReproduce(Animal animal) {
-        return animal.getIsMature() && animal.current_energy > animal.req_energy_reproduction && !has_reproduced_today;
-    }
-
-    //This method tries to find a partner for reproduction at the given location.
-    private Optional<Animal> getPartner(Location location) {
-        Object nearbyObject = world.getTile(location);
-        if (nearbyObject instanceof Animal && this.getClass() == nearbyObject.getClass()) {
             Animal partner = (Animal) nearbyObject;
-            if (canReproduce(partner)) {
-                return Optional.of(partner);
+            if (this == partner) {
+                continue;
             }
+            if (this.getClass() != partner.getClass()) {
+                continue;
+            }
+            if (!partner.getIsMature() || partner.has_reproduced_today) {
+                continue;
+            }
+            createBaby();
+            this.current_energy *= energy_loss_reproduction;
+            partner.current_energy *= energy_loss_reproduction;
+            this.has_reproduced_today = true;
+            partner.has_reproduced_today = true;
         }
-        return Optional.empty();
     }
 
-    // This method creates a baby animal.
-    private void createBaby(Animal partner) {
-        //Loss of energy for both parents.
-        partner.current_energy *= partner.energy_loss_reproduction;
-        this.current_energy *= this.energy_loss_reproduction;
+    private void createBaby() {
+        Location locationForBaby = Help.getRandomNearbyEmptyTile(world, world.getCurrentLocation(), 2);
         try {
-            // Create a new instance of the animal class.
             Animal baby = this.getClass().getDeclaredConstructor().newInstance();
-            // Place the baby in a random nearby empty location.
-            world.setTile(Help.getRandomNearbyEmptyTile(world, world.getLocation(partner), 2), baby);
-            partner.has_reproduced_today = true;
-            this.has_reproduced_today = true;
+            if (locationForBaby != null) {
+                world.setTile(locationForBaby, baby);
+            }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                | NoSuchMethodException ignore) {
+                | NoSuchMethodException e) {
+            System.out.println(e.getMessage());
         }
     }
 
