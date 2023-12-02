@@ -35,7 +35,7 @@ public class Berry extends Foliage implements DynamicDisplayInformationProvider 
 
     @Override
     public DisplayInformation getInformation(){
-        if (!eaten) {
+        if (!isEaten()) {
             return new DisplayInformation(Color.blue, "bush-berries");
         } else {
             return new DisplayInformation(Color.green, "bush");
