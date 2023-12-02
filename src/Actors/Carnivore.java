@@ -1,4 +1,5 @@
 package Actors;
-public interface Carnivore  {
-    abstract void consumeCarcas();
+
+public interface Carnivore {
+    
 }

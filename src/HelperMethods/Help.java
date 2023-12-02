@@ -2,6 +2,7 @@ package HelperMethods;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Set;
 
 import itumulator.executable.Program;
 import itumulator.world.*;
@@ -45,6 +46,10 @@ public class Help {
 
         Random random = new Random();
         return emptyTiles.get(random.nextInt(emptyTiles.size()));
+    }
+
+    public static int getDistance(Location l1, Location l2) {
+        return Math.abs(l1.getX() - l2.getX()) + Math.abs(l1.getY() - l2.getY());
     }
 
 }

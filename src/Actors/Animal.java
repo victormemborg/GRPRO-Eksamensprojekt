@@ -1,23 +1,29 @@
 package Actors;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import HelperMethods.Help;
 import itumulator.world.*;
-import itumulator.executable.*;
 import itumulator.simulator.Actor;
 
 public abstract class Animal implements Actor {
+    Random r = new Random();
     World world;
     int max_hp;
     int max_energy;
-    double current_hp;
-    double current_energy;
+    int current_hp;
+    int current_energy;
     int damage;
     int maturity_age;
     double req_energy_reproduction;
+    int vision_range;
+    int move_range;
+    Set<String> diet;
 
     int age = 0;
     int energy_loss_move = 1;
@@ -28,19 +34,20 @@ public abstract class Animal implements Actor {
     // Home home;
     boolean is_sleeping = false;
 
-    abstract DisplayInformation getInformation();
-
-    abstract void move();
-
     abstract void sleep();
+    
+    abstract public void act(World world);
 
-    abstract public void attacked(int damage);
 
     void attack(Animal victim) {
-        Animal attacker = this;
-        victim.current_hp = victim.getHp() - attacker.getDamage();
-        if (victim.getHp() <= 0) {
-            die(victim);
+        victim.attacked(damage);
+    }
+
+    public void attacked(int dmg) {
+        if (current_hp - dmg < 0) {
+            die();
+        } else {
+            current_hp -= dmg;
         }
     }
 
@@ -51,7 +58,6 @@ public abstract class Animal implements Actor {
         }
     }
 
-    //curently it breeds with itself
     public void reproduce() {
         if (!getIsMature()) {
             return;
@@ -97,39 +103,165 @@ public abstract class Animal implements Actor {
         }
     }
 
-    void die(Animal animal) {
-        // Instantier carcass
-        // world.setTile(world.getLocation(this), 0), carcass);
+    ArrayList<Animal> checkForCarnivore() {
+        // check if there is a carnivore nearby
+        System.out.println(world.getCurrentLocation());
+        Set<Location> neighbours = world.getSurroundingTiles(this.getLocation(), vision_range+1);
+        System.out.println(neighbours);
+        ArrayList<Animal> carnivore_list = new ArrayList<>();
 
-        world.delete(animal);
+        Set<Location> neighbours2 = new HashSet<>();
+        for (Location l : neighbours) {
+            if (world.getTile(l) != null) {
+                neighbours2.add(l);
+            }
+        }
+        for (Location l : neighbours2) {
+            System.out.println(world.getTile(l) + "test");
+            if (Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("Carnivore")) {
+                carnivore_list.add( (Animal) world.getTile(l));
+            } 
+        }
+        return carnivore_list;
     }
 
-    // Generates an escape route for the prey
-    void getEscapeRoute(Location hunter, Location prey, int radius) {
-        Animal preyObject = (Animal) world.getTile(prey);
-        Location newLocation = null;
-
-        if (hunter.getX() > prey.getX()) {
-            newLocation = new Location(prey.getX() - radius, prey.getY());
-        } else if (hunter.getX() < prey.getX()) {
-            newLocation = new Location(prey.getX() + radius, prey.getY());
-        } else if (hunter.getY() > prey.getY()) {
-            newLocation = new Location(prey.getX(), prey.getY() - radius);
-        } else if (hunter.getY() < prey.getY()) {
-            newLocation = new Location(prey.getX(), prey.getY() + radius);
+    Animal getNearestCarnivore() {
+        ArrayList<Animal> carni_list = checkForCarnivore();
+        int shortest_dist = Integer.MAX_VALUE;
+        Animal nearest_carni = null;
+        for (Animal a : carni_list) {
+            int dist = Help.getDistance(this.getLocation(), a.getLocation());
+            if (dist < shortest_dist) {
+                shortest_dist = dist;
+                nearest_carni = a;
+            }
         }
-        if (newLocation != null && world.isTileEmpty(newLocation)) {
-            world.move(preyObject, newLocation);
+        return nearest_carni;
+    }
+
+    Eatable findNearestEatable() {
+        //Checks for all surrounding Eatable objects
+        Set<Location> neighbours = world.getSurroundingTiles(vision_range); 
+        ArrayList<Eatable> food_list = new ArrayList<>();
+        for (Location l : neighbours) {
+            if (l != null && Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("Eatable")) {
+                food_list.add( (Eatable) world.getTile(l));
+            } 
+        } 
+        //Remove all eatables not on dietlist
+        for(Eatable e : food_list) {
+            if(!diet.contains(e.getClass().getName())) {
+                food_list.remove(e);
+            }
+        }
+        //Find the nearest eatable
+        Eatable nearestEatable = null;
+        int closestLocation = Integer.MAX_VALUE;
+        for(Eatable e : food_list) {
+            Location foodLoc = world.getLocation(e);
+            Location animalLoc = this.getLocation();
+            int distance = Help.getDistance(foodLoc, animalLoc);
+            if(distance < closestLocation) {
+                nearestEatable = e;
+                closestLocation = distance;
+            }
+        }
+        return nearestEatable;
+    }
+
+    void die() {
+        world.setTile(world.getLocation(this), new Carcass(max_energy));
+        world.delete(this);
+    }
+    
+    void moveToFood() {
+        Eatable food = findNearestEatable();
+        if (food != null) {
+            Location food_loc = world.getLocation(food);
+            Location move_loc = shortestRoute(food_loc);
+            if (food_loc.getX() == move_loc.getX() && food_loc.getY() == move_loc.getY()) {
+                world.move(this, move_loc);
+                increaseEnergy(food.consumed());
+            } else {
+                world.move(this, move_loc);
+            }
+        } else {
+            moveRandom();
+        }
+    }
+
+    // Returns the next location in the shortest route to the target
+    Location shortestRoute(Location target) {
+        Set<Location> shortest_route = world.getSurroundingTiles(move_range);
+        //Removes locations that contains a blocking object
+        for (Location l : shortest_route) {
+            if(!world.isTileEmpty(l)) {
+                shortest_route.remove(l);
+            }
+        }
+        // check which of the surrounding tiles is closest to the target
+        Location closest_location = null;
+        int closest_distance = Integer.MAX_VALUE;
+        for(Location l : shortest_route) {
+            int distance = Help.getDistance(l, target);
+            if(distance < closest_distance) {
+                closest_location = l;
+                closest_distance = distance;
+            }
+        }
+        return closest_location;
+    }
+        
+
+    // Generates an escape route for the animal
+    void escape(Location threat_loc) {
+        Set<Location> escape_routes = world.getSurroundingTiles(move_range);
+        //Removes locations that contains a blocking object
+
+        Set<Location> escape_routes2 = new HashSet<>();
+        for (Location l : escape_routes) {
+            if (!(world.getTile(l) != null && !(world.getTile(l) instanceof NonBlocking))) {
+                escape_routes2.add(l);
+            }
+        }
+        //Find the escape route with max distance to threat
+        int max_distance = 0;
+        Location escape_route = this.getLocation();
+        for (Location l : escape_routes2) {
+            int distance = Math.abs(this.getLocation().getX() - threat_loc.getX()) + Math.abs(this.getLocation().getX() - threat_loc.getX());
+            if (distance > max_distance) {
+                max_distance = distance;
+                escape_route = l;
+            }
+        }
+        //Move to the escape route
+        System.out.println("Escape!");
+        world.move(this, escape_route);
+    }
+
+    void increaseEnergy(int energy) {
+        int potential_energy = current_energy + energy;
+        if (potential_energy > max_energy) {
+            current_energy = max_energy;
+        } else {
+            current_energy = potential_energy;
+        }
+    }
+
+    void moveRandom() {
+        Location ran_loc = Help.getRandomNearbyEmptyTile(world, this.getLocation(), move_range);
+        if (ran_loc != null) {
+            world.move(this, ran_loc);
         }
     }
 
     // void setHome(Home home)
 
-    double getHp() {
+    int getHp() {
         return current_hp;
     }
 
-    double getEnergy() {
+    int getEnergy() {
         return current_energy;
     }
 
@@ -143,6 +275,10 @@ public abstract class Animal implements Actor {
 
     boolean getIsMature() {
         return age >= maturity_age;
+    }
+
+    Location getLocation() {
+        return world.getCurrentLocation();
     }
 
 }

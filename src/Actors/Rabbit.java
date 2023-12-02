@@ -1,23 +1,26 @@
 package Actors;
 
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 import java.awt.Color;
 
-import HelperMethods.Help;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.*;
 
-public class Rabbit extends Animal implements Herbivore, DynamicDisplayInformationProvider {
+public class Rabbit extends Animal implements DynamicDisplayInformationProvider {
     public Rabbit() {
         super.max_hp = 100;
-        super.current_hp = 100.00;
+        super.current_hp = 100;
         super.max_energy = 100;
-        super.current_energy = 100.00;
+        super.current_energy = 100;
         super.maturity_age = 3;
         super.damage = 1;
+        super.diet = Set.of("Grass");
 
         super.req_energy_reproduction = 0.6;
+        super.move_range = 2;
 
     }
 
@@ -26,35 +29,25 @@ public class Rabbit extends Animal implements Herbivore, DynamicDisplayInformati
     public void act(World world) {
         this.world = world;
         increaseAge();
-        move();
+        if (world.isNight()) {
+            //sleep();
+        }
+        if(checkForCarnivore().isEmpty()) {
+            System.out.println(checkForCarnivore());
+            if (current_energy < 50) {
+                moveToFood();
+            } else {
+                moveRandom();
+            }
+        } else {
+            System.out.println("Escape 2");
+            Animal threat = getNearestCarnivore();
+            escape(threat.getLocation());
+        }
         reproduce();
         // sleep();
     }
 
-    public void move() {
-        if (current_energy > 0 && !world.getEmptySurroundingTiles().isEmpty()) {
-            current_energy -= energy_loss_move;
-            // check if there is a carnivore nearby
-            Set<Location> neighbours = world.getSurroundingTiles(2); // magic number needs to be a field
-            for (Location l : neighbours) {
-                if (l != null && world.getTile(l) instanceof Carnivore) {
-                    // get the location of the carnivore
-                    Carnivore carnivore = (Carnivore) world.getTile(l);
-                    Location carnivoreLoc = world.getLocation(carnivore);
-                    // get location of the rabbit
-                    Location rabbitLoc = world.getLocation(this);
-                    // move opposite direction of the carnivore
-                    getEscapeRoute(carnivoreLoc, rabbitLoc, 1);
-                } 
-                Location loc = world.getLocation(this);
-                if (Help.getRandomNearbyEmptyTile(world, loc, 1) != null) {
-                    world.move(this, Help.getRandomNearbyEmptyTile(world, loc, 1));
-                }
-            }
-        } else if(current_energy <= 0) {
-            die(this);
-        }
-    }
 
     // NOT DONE NEEDS TO MOVE TO ITS BURROW
     public void sleep() {
@@ -62,16 +55,6 @@ public class Rabbit extends Animal implements Herbivore, DynamicDisplayInformati
         while (current_energy < max_energy) {
             current_energy += 10;
         }
-    }
-
-    // NOT DONE
-    public void attacked(int damage) {
-
-    }
-
-    // NOT DONE
-    public void harvest() {
-
     }
 
     @Override
