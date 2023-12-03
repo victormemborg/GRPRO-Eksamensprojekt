@@ -1,2 +1,4 @@
 5
 grass 3-5
+rabbit 1
+wolf 1

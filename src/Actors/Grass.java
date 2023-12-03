@@ -11,11 +11,13 @@ import java.util.Random;
 import java.util.ArrayList;
 
 public class Grass extends Foliage implements Actor, DynamicDisplayInformationProvider, NonBlocking {
+    World world;
     boolean dying = false;
     int time_dying = 0;
 
     @Override
     public void act(World world){
+        this.world = world;
         Random ran = new Random();
         //Death mechanic
         if (ran.nextInt(20) == 19) {
