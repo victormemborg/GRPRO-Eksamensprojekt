@@ -1,0 +1,4 @@
+5
+grass 5
+rabbit 1
+berry 1

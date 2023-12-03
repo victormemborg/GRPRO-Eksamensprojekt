@@ -8,6 +8,9 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+/**
+ * A class to allow caching of all images in resource folder. Strips any subdirectory and only maintains name (thus they must be unique even in subdirectories)
+ */
 public class ImageResourceCache {
     /* This is Singleton pattern */
     private static ImageResourceCache instance;
@@ -62,7 +65,7 @@ public class ImageResourceCache {
                 }
             }
         } catch (Exception e){
-            System.out.println(e.getMessage());
+            System.out.println("Cache loader error: " + e.getMessage());
         }
     }
 

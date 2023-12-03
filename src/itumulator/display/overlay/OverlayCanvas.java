@@ -13,6 +13,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JPanel;
 
+/**
+ * A class to show the overlay (i.e., buttons, information)
+ */
 public class OverlayCanvas extends JPanel{
     private final int CLOUD_AMOUNT = 7;
     private final int MS_PER_FRAME = 10;
