@@ -1,4 +1,4 @@
-10
-grass 3-5
+5
+grass 5
 rabbit 1
-wolf 2
+berry 1

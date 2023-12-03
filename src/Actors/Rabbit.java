@@ -1,7 +1,6 @@
 package Actors;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Set;
 import java.awt.Color;
 
@@ -19,7 +18,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         super.current_energy = 100;
         super.maturity_age = 3;
         super.damage = 1;
-        super.diet = Set.of("Grass");
+        super.diet = Set.of("Berry", "Grass");
 
         super.req_energy_reproduction = 0.6;
         super.move_range = 2;
@@ -29,20 +28,22 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
 
     // Needs all rabbit behaviour
     @Override
-    public void act(World placeholder) {
+    public void act(World w) {
+        super.act(w);
+        System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
         if (world.isNight()) {
             //sleep();
+            return;
         }
         ArrayList<Animal> threats = checkForCarnivore();
         if(threats.isEmpty()) {
-            if (current_energy < 50) {
+            if ( (double) current_energy/max_energy < 0.5) {
+                System.out.println("energy lvl: " + (double) current_energy/max_energy + "looking for food");
                 moveToFood();
             } else {
-                System.out.println("Moving Random");
                 moveRandom();
             }
         } else {
-            System.out.println("Escape!");
             escape(threats);
         }
         reproduce();

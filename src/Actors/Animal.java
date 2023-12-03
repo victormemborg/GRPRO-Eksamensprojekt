@@ -1,7 +1,6 @@
 package Actors;
 
 // Java lib
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Random;
@@ -55,15 +54,15 @@ public abstract class Animal implements Actor {
     */
     Animal(World world) {
         this.world = world;               
-        current_hp = max_hp;
-        current_energy = max_energy;
+        this.current_hp = max_hp;
+        this.current_energy = max_energy;
         //fullness = 1;
-        req_hp_reproduction = 0.6;   
-        req_energy_reproduction = 0.6;
-        energy_loss_reproduction = 0.5;
-        energy_loss_move = 10;
-        age = 0;
-        has_reproduced_today = false;
+        this.req_hp_reproduction = 0.6;   
+        this.req_energy_reproduction = 0.6;
+        this.energy_loss_reproduction = 0.5;
+        this.energy_loss_move = 10;
+        this.age = 0;
+        this.has_reproduced_today = false;
     }
 
 
@@ -72,9 +71,9 @@ public abstract class Animal implements Actor {
 
     @Override
     public void act(World w) {
-        age++;
         if (world.getCurrentTime() == 0) {
             has_reproduced_today = false;
+            age++;
         }
         passiveHpRegen();
         //Must be extended by subclass here....    
@@ -109,17 +108,18 @@ public abstract class Animal implements Actor {
 
     // Returns the next location in the shortest route to the target
     Location shortestRoute(Location target) {
-        Set<Location> shortest_route = world.getSurroundingTiles(move_range);
+        Set<Location> neighbors = world.getSurroundingTiles(move_range);
         //Removes locations that contains a blocking object
-        for (Location l : shortest_route) {
-            if(!world.isTileEmpty(l)) {
-                shortest_route.remove(l);
+        ArrayList<Location> routes = new ArrayList<>();
+        for (Location l : neighbors) {
+            if(world.isTileEmpty(l)) {
+                routes.add(l);
             }
         }
         // check which of the surrounding tiles is closest to the target
         Location closest_location = null;
         int closest_distance = Integer.MAX_VALUE;
-        for(Location l : shortest_route) {
+        for(Location l : routes) {
             int distance = Help.getDistance(l, target);
             if(distance < closest_distance) {
                 closest_location = l;
@@ -180,6 +180,18 @@ public abstract class Animal implements Actor {
         }
     }
 
+    boolean isPartOfDiet(Object object) {
+        if (object == null) {
+            return false;
+        }
+        System.out.println(diet.toString() + object.getClass().getSimpleName());
+        if (diet.toString().contains(object.getClass().getSimpleName())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     ///////////////////////////////////////////////////////////////////////
     ///////////////          Reproduction methods:          ///////////////
@@ -218,14 +230,9 @@ public abstract class Animal implements Actor {
 
     private void createBaby() {
         Location locationForBaby = Help.getRandomNearbyEmptyTile(world, world.getCurrentLocation(), 2);
-        try {
-            Animal baby = this.getClass().getDeclaredConstructor().newInstance();
-            if (locationForBaby != null) {
-                world.setTile(locationForBaby, baby);
-            }
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                | NoSuchMethodException e) {
-            System.out.println(e.getMessage());
+        Animal baby = (Animal) Help.createNewInstanceWithArg(this, world);
+        if (locationForBaby != null && baby != null) {
+            world.setTile(locationForBaby, baby);
         }
     }
 
@@ -262,14 +269,14 @@ public abstract class Animal implements Actor {
         }
         return nearest_carnivore;
     }
-
+    //Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("NonBlocking"))
     // Generates an escape route for the animal
     void escape(ArrayList<Animal> threat_list) {
         //Find all possible escape routes
         Set<Location> reachable_tiles = world.getSurroundingTiles(this.getLocation(), move_range);
         ArrayList<Location> escape_routes = new ArrayList<>();
         for (Location l : reachable_tiles) {
-            if (world.getTile(l) == null || Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("NonBlocking")) {
+            if (world.getTile(l) == null || Help.doesInterfacesContain(world.getTile(l), "NonBlocking")) {
                 escape_routes.add(l);
             }
         }
@@ -299,20 +306,25 @@ public abstract class Animal implements Actor {
     ////////////////             Food methods:            /////////////////
 
     Eatable findNearestEatable() {
+        //Check if it stands on something it can eat
+        try {
+            Object tile = world.getNonBlocking(this.getLocation());
+            if (isPartOfDiet(tile)) {
+                System.out.println(tile);
+                return (Eatable) tile;
+            }
+        } catch (IllegalArgumentException iae) {
+            //do nothing
+        }
         //Checks for all surrounding Eatable objects
-        Set<Location> neighbours = world.getSurroundingTiles(vision_range); 
+        Set<Location> neighbours = world.getSurroundingTiles(vision_range);
         ArrayList<Eatable> food_list = new ArrayList<>();
         for (Location l : neighbours) {
-            if (l != null && Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("Eatable")) {
+            Object tile = world.getTile(l);
+            if (isPartOfDiet(tile)) {
                 food_list.add( (Eatable) world.getTile(l));
             } 
         } 
-        //Remove all eatables not on dietlist
-        for(Eatable e : food_list) {
-            if(!diet.contains(e.getClass().getName())) {
-                food_list.remove(e);
-            }
-        }
         //Find the nearest eatable
         Eatable nearestEatable = null;
         int closestLocation = Integer.MAX_VALUE;
@@ -328,20 +340,28 @@ public abstract class Animal implements Actor {
         return nearestEatable;
     }
     
-    void moveToFood() {
+     void moveToFood() {
         Eatable food = findNearestEatable();
-        if (food != null) {
-            Location food_loc = world.getLocation(food);
-            Location move_loc = shortestRoute(food_loc);
-            if (food_loc.getX() == move_loc.getX() && food_loc.getY() == move_loc.getY()) {
-                world.move(this, move_loc);
-                increaseEnergy(food.consumed());
-            } else {
-                move(move_loc);
-            }
-        } else {
+        if (food == null) {
             moveRandom();
+            return;
         }
+        Location food_loc = world.getLocation(food);
+        if (Help.isSameLocations(food_loc, this.getLocation())) {
+            eat(food);
+            return;
+        }
+        Location move_loc = shortestRoute(food_loc);
+        if (Help.isSameLocations(food_loc, move_loc)) {
+            eat(food);
+            world.move(this, move_loc);
+        } else {
+            move(move_loc);
+        }
+    }
+
+    void eat(Eatable food) {
+        increaseEnergy(food.consumed());
     }
 
 
