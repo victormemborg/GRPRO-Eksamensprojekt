@@ -1,23 +1,29 @@
 package Actors;
-import itumulator.world.NonBlocking;
 import itumulator.world.World;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
-import itumulator.simulator.Actor;
 import itumulator.world.Location;
+import itumulator.world.NonBlocking;
 
 import java.awt.Color;
 import java.util.Random;
 import java.util.ArrayList;
 
-public class Grass extends Foliage implements Actor, DynamicDisplayInformationProvider, NonBlocking {
-    World world;
-    boolean dying = false;
-    int time_dying = 0;
+public class Grass extends Foliage implements DynamicDisplayInformationProvider, NonBlocking {
+    boolean dying;
+    int time_dying;
+
+    public Grass(World world) {
+        super(world);
+        spread_rate = 0.5;
+        energy = 50;
+
+        dying = false;
+        time_dying = 0;
+    }
 
     @Override
-    public void act(World world){
-        this.world = world;
+    public void act(World placeholder){
         Random ran = new Random();
         //Death mechanic
         if (ran.nextInt(20) == 19) {
@@ -38,7 +44,7 @@ public class Grass extends Foliage implements Actor, DynamicDisplayInformationPr
             }
         }
         if (!list.isEmpty() && ran.nextBoolean() && !dying && world.isDay()) {
-                world.setTile(list.get(ran.nextInt(list.size())), new Grass());
+                world.setTile(list.get(ran.nextInt(list.size())), new Grass(world));
         }
     }
 
@@ -51,7 +57,7 @@ public class Grass extends Foliage implements Actor, DynamicDisplayInformationPr
         }
         
     }
-
+    
     public boolean getDying() {
         return dying;
     }

@@ -9,7 +9,8 @@ import itumulator.world.*;
 
 public class Wolf extends Animal implements DynamicDisplayInformationProvider, Carnivore {
     
-    public Wolf() {
+    public Wolf(World world) {
+        super(world);
         super.max_hp = 100;
         super.current_hp = 100;
         super.max_energy = 100;
@@ -19,11 +20,11 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         super.diet = Set.of("Grass");
 
         super.req_energy_reproduction = 0.6;
-        super.move_range = 2;
+        super.move_range = 1;
+        super.vision_range = 3;
     }
 
-    public void act(World world) {
-        this.world = world;
+    public void act(World placeholder) {
         moveRandom();
     }
 

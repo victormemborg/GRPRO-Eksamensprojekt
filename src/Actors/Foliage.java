@@ -1,14 +1,14 @@
 package Actors;
 
 import itumulator.simulator.Actor;
-import itumulator.world.*;
+import itumulator.world.World;
 
-public abstract class Foliage implements Actor, NonBlocking {
+public abstract class Foliage implements Actor {
     World world;
     double spread_rate;
     int energy;
-    
-    public void act() {
 
+    Foliage(World world) {
+        this.world = world;
     }
 }
