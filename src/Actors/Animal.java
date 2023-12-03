@@ -105,38 +105,33 @@ public abstract class Animal implements Actor {
 
     ArrayList<Animal> checkForCarnivore() {
         // check if there is a carnivore nearby
-        System.out.println(world.getCurrentLocation());
-        Set<Location> neighbours = world.getSurroundingTiles(this.getLocation(), vision_range+1);
-        System.out.println(neighbours);
+        Set<Location> visible_tiles = world.getSurroundingTiles(this.getLocation(), vision_range);
         ArrayList<Animal> carnivore_list = new ArrayList<>();
-
-        Set<Location> neighbours2 = new HashSet<>();
-        for (Location l : neighbours) {
-            if (world.getTile(l) != null) {
-                neighbours2.add(l);
+        for (Location l : visible_tiles) {
+            try {
+                if (Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("Carnivore")) {
+                    carnivore_list.add( (Animal) world.getTile(l) );
+                }
+            } catch (NullPointerException npe) {
+                //Gets here if world.getTile(l) returns null. Does nothing. Just skips the step
             }
         }
-        for (Location l : neighbours2) {
-            System.out.println(world.getTile(l) + "test");
-            if (Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("Carnivore")) {
-                carnivore_list.add( (Animal) world.getTile(l));
-            } 
-        }
+        System.out.println("Carnovores nearby: " + carnivore_list.size());
         return carnivore_list;
     }
 
     Animal getNearestCarnivore() {
-        ArrayList<Animal> carni_list = checkForCarnivore();
+        ArrayList<Animal> carnivore_list = checkForCarnivore();
         int shortest_dist = Integer.MAX_VALUE;
-        Animal nearest_carni = null;
-        for (Animal a : carni_list) {
+        Animal nearest_carnivore = null;
+        for (Animal a : carnivore_list) {
             int dist = Help.getDistance(this.getLocation(), a.getLocation());
             if (dist < shortest_dist) {
                 shortest_dist = dist;
-                nearest_carni = a;
+                nearest_carnivore = a;
             }
         }
-        return nearest_carni;
+        return nearest_carnivore;
     }
 
     Eatable findNearestEatable() {
@@ -215,13 +210,11 @@ public abstract class Animal implements Actor {
 
     // Generates an escape route for the animal
     void escape(Location threat_loc) {
-        Set<Location> escape_routes = world.getSurroundingTiles(move_range);
-        //Removes locations that contains a blocking object
-
-        Set<Location> escape_routes2 = new HashSet<>();
+        Set<Location> reachable_tiles = world.getSurroundingTiles(this.getLocation(), move_range);
+        ArrayList<Location> escape_routes = new ArrayList<>();
         for (Location l : escape_routes) {
-            if (!(world.getTile(l) != null && !(world.getTile(l) instanceof NonBlocking))) {
-                escape_routes2.add(l);
+            if (Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("Nonblocking") || world.getTile(l) == null) {
+                escape_routes.add(l);
             }
         }
         //Find the escape route with max distance to threat

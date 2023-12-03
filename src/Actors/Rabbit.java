@@ -20,7 +20,8 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         super.diet = Set.of("Grass");
 
         super.req_energy_reproduction = 0.6;
-        super.move_range = 2;
+        super.move_range = 1;
+        super.vision_range = 2;
 
     }
 
@@ -33,7 +34,6 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
             //sleep();
         }
         if(checkForCarnivore().isEmpty()) {
-            System.out.println(checkForCarnivore());
             if (current_energy < 50) {
                 moveToFood();
             } else {
