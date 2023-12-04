@@ -1,4 +1,2 @@
 5
-rabbit 3
-grass 5
-berry 3
+rabbit 2

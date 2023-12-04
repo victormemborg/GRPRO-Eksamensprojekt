@@ -19,8 +19,6 @@ public abstract class Animal implements Actor {
 
     // Initialized by Animal:
     World world;                      // The world the animal lives in
-    int current_hp;                   // The current amount of HP the animal has
-    int current_energy;               // The current amount of energy the animal has
     //double fullness;                  // A percentage value describing how full the animal is
     double req_hp_reproduction;       // A percentage value of the animals max HP, that must at least be present for reproduction
     double req_energy_reproduction;   // A percentage value of the animals max energy, that must at least be present for reproduction
@@ -32,7 +30,9 @@ public abstract class Animal implements Actor {
 
     // Initialized by a subclass:
     int max_hp;                       // The max HP for the animal
+    int current_hp;                   // The current amount of HP the animal has
     int max_energy;                   // The max energy level for the animal
+    int current_energy;               // The current amount of energy the animal has
     int damage;                       // The damage the animal is cabable of dealing
     int maturity_age;                 // The minimum age of the animal required for reproduction. Also determines the DisplayInformation 
     int vision_range;                 // The amount of tiles the animal can see arround itself
@@ -54,8 +54,6 @@ public abstract class Animal implements Actor {
     */
     Animal(World world) {
         this.world = world;               
-        this.current_hp = max_hp;
-        this.current_energy = max_energy;
         //fullness = 1;
         this.req_hp_reproduction = 0.6;   
         this.req_energy_reproduction = 0.6;
@@ -104,8 +102,14 @@ public abstract class Animal implements Actor {
     }
 
     void die() {
+        try {
+            world.delete(world.getNonBlocking(this.getLocation()));
+        } catch (IllegalArgumentException ignore) {
+            //do nothing
+        }
         world.setTile(world.getLocation(this), new Carcass(max_energy));
         world.delete(this);
+        world = null;
     }
 
     // Returns the next location in the shortest route to the target
