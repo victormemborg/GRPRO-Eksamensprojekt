@@ -1,2 +1,4 @@
 5
-grass 3-5
+rabbit 3
+grass 5
+berry 3
