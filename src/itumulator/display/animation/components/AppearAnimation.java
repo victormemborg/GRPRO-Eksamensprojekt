@@ -4,7 +4,10 @@ import itumulator.display.animation.ObjectInformation;
 import itumulator.display.utility.IsomorphicCoordinateFactory;
 import itumulator.world.Location;
 
-public class AppearAnimation extends Animation{
+/**
+ * An animation that makes an object appear.
+ */
+public class AppearAnimation extends Animation {
     int step;
 
     public AppearAnimation(ObjectInformation oi, Location location, int animationLength) {

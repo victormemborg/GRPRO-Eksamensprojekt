@@ -12,6 +12,9 @@ import itumulator.display.utility.IsomorphicCoordinateFactory;
 import itumulator.display.utility.IsomorphicUtility;
 import itumulator.display.utility.Point2DInt;
 
+/**
+ * A class representing the drawing of a single object for a single frame (using {@link ObjectInformation}).
+ */
 public class AnimationFrame{
     private final float SHADOW_OPACITY = 0.5f;
     private ObjectInformation oi;
@@ -31,11 +34,15 @@ public class AnimationFrame{
     public AnimationFrame(ObjectInformation oi, Point2DInt pixelPoint, int opacity){
         this.oi = oi;
         this.pixelPoint = pixelPoint;
-        alphaComp = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)((opacity * 1.0)/255));
+        float opfloat = opacity > 0 ? (float)((opacity * 1.0)/255) : 0;
+        alphaComp = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opfloat);
     }
 
+    /**
+     * Draws the part of the frame on a graphics element associated to the object it represents.
+     * @param g
+     */
     public void draw(Graphics g){
-        double tileWidth = IsomorphicCoordinateFactory.Instance().getTileWidth();
         double tileHeight = IsomorphicCoordinateFactory.Instance().getTileHeight();
 
         if (alphaComp != null){
@@ -43,7 +50,7 @@ public class AnimationFrame{
         }
 
         if (oi == null){
-            // We assume draw to exact location (probably UI)
+            // We assume draw to exact location 
             g.drawImage(img, pixelPoint.getX(), pixelPoint.getY(), null);
         } else {
             if (oi.getImage() != null){

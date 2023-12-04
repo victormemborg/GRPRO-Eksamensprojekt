@@ -8,6 +8,9 @@ import java.util.concurrent.Callable;
 
 import itumulator.display.utility.IsomorphicCoordinateFactory;
 
+/**
+ * AnimationSets are used to parallelise the drawing of individual frames (by aggregating different object drawings, i.e., {@link AnimationFrame})
+ */
 public class AnimationSet implements Callable<BufferedImage>{
     private List<AnimationFrame> frames;
 
