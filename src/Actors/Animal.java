@@ -201,6 +201,114 @@ public abstract class Animal implements Actor {
         }
     }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ArrayList<Object> getObjectsWithInterface(String target, ArrayList<Location> area) {
+        ArrayList<Object> result_list = new ArrayList<>();
+        for (Location l : area) {
+            Object tile = world.getTile(l);
+            if (Help.doesInterfacesInclude(tile, target)) {
+                result_list.add(tile);
+            }
+        }
+        return result_list;
+    }
+
+    //getObjectsInDiet(home.getArea())
+    ArrayList<Object> getObjectsInDiet(ArrayList<Location> area) {
+        ArrayList<Object> diet_list = new ArrayList<>();
+        for (Location l : area) {
+            Object potential_food = world.getTile(l);
+            if (isPartOfDiet(potential_food)) {
+                diet_list.add(potential_food);
+            }
+        }
+        return diet_list;
+    }
+
+    ArrayList<Object> getObjectsOfClass(String target, ArrayList<Location> area) {
+        try {
+            ArrayList<Object> class_list = new ArrayList<>();
+            for (Location l : area) {
+                Object tile = world.getTile(l);
+                Class<?> class_type = Class.forName(target);
+                if (class_type.isInstance(tile)) {
+                    class_list.add(tile);
+                }
+            }
+            return class_list;
+        } catch (ClassNotFoundException cnfe) {
+            ArrayList<Object> list = new ArrayList<>();
+            return list;
+        }
+    }
+
+    Object getNearestObject(ArrayList<Object> object_list) {
+        if (object_list.isEmpty()) {
+            return null;
+        }
+        Object nearest_object = object_list.get(0);
+        for (Object o : object_list) {
+            int min_dist = Integer.MAX_VALUE;
+            int dist = Help.getDistance(this.getLocation(), world.getLocation(o));
+            if (dist < min_dist) {
+                min_dist = dist;
+                nearest_object = o;
+            }
+        }
+        return nearest_object;
+    }
+
+    //Moves the Animal to the empty tile closest to its target. Returns the distance from the new location to the target;
+    int moveTo(Location target) {
+        Location moveLoc = getClosestEmptyLocation(target);
+        if (!Help.isSameLocations(this.getLocation(), moveLoc)) {
+            move(moveLoc);
+        }
+        return Help.getDistance(moveLoc, target);
+    }
+
+
+
+    ArrayList<Location> getEmptyTilesWithinRange(int range) {
+        Set<Location> tiles = world.getSurroundingTiles(this.getLocation(), range);
+        ArrayList<Location> empty_tiles = new ArrayList<>();
+        for (Location l : tiles) {
+            if (world.isTileEmpty(l)) {
+                empty_tiles.add(l);
+            }
+        }
+        return empty_tiles;
+    }
+
+    Location getClosestEmptyLocation(Location target) {
+        ArrayList<Location> possible_paths = getEmptyTilesWithinRange(move_range);
+        possible_paths.add(this.getLocation()); // Let it stay if desirable
+
+        int min_dist = Integer.MAX_VALUE;
+        Location closest_path = possible_paths.get(0);
+        for (Location path : possible_paths) {
+            int dist = Help.getDistance(path, target);
+            if (dist < min_dist) {
+                min_dist = dist;
+                closest_path = path;
+            }
+        }
+        return closest_path;
+    }
+
+    //does not include the Animals own location
+    ArrayList<Location> getSurroundingTilesAsList(int range) {
+        Set<Location> tiles_set = world.getSurroundingTiles(this.getLocation(), range);
+        ArrayList<Location> tiles_list = new ArrayList<>();
+        for (Location l : tiles_set) {
+            tiles_list.add(l);
+        }
+        return tiles_list;
+    }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////
     ///////////////          Reproduction methods:          ///////////////
@@ -280,7 +388,7 @@ public abstract class Animal implements Actor {
         Set<Location> visible_tiles = world.getSurroundingTiles(this.getLocation(), vision_range);
         ArrayList<Animal> carnivore_list = new ArrayList<>();
         for (Location l : visible_tiles) {
-            if (Help.doesInterfacesContain(world.getTile(l), "Carnivore")) {
+            if (Help.doesInterfacesInclude(world.getTile(l), "Carnivore")) {
                 carnivore_list.add( (Animal) world.getTile(l) );
             }
         }
@@ -308,7 +416,7 @@ public abstract class Animal implements Actor {
         Set<Location> reachable_tiles = world.getSurroundingTiles(this.getLocation(), move_range);
         ArrayList<Location> escape_routes = new ArrayList<>();
         for (Location l : reachable_tiles) {
-            if (world.getTile(l) == null || Help.doesInterfacesContain(world.getTile(l), "NonBlocking")) {
+            if (world.getTile(l) == null || Help.doesInterfacesInclude(world.getTile(l), "NonBlocking")) {
                 escape_routes.add(l);
             }
         }
