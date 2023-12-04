@@ -17,14 +17,10 @@ public class Burrow implements Actor, NonBlocking, DynamicDisplayInformationProv
     }
 
     public DisplayInformation getInformation() {
-
         if (big_hole) {
             return new DisplayInformation(Color.black, "hole");
         } else {
             return new DisplayInformation(Color.black, "hole-small");
         }
     }
-
-    
-
 }

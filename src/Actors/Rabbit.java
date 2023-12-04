@@ -1,7 +1,6 @@
 package Actors;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Set;
 import java.awt.Color;
 
@@ -10,39 +9,42 @@ import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.*;
 
 public class Rabbit extends Animal implements DynamicDisplayInformationProvider {
-    public Rabbit() {
+    public Rabbit(World world) {
+        super(world);
+
         super.max_hp = 100;
         super.current_hp = 100;
         super.max_energy = 100;
         super.current_energy = 100;
         super.maturity_age = 3;
         super.damage = 1;
-        super.diet = Set.of("Grass");
+        super.diet = Set.of("Berry", "Grass");
 
         super.req_energy_reproduction = 0.6;
-        super.move_range = 1;
+        super.move_range = 2;
         super.vision_range = 2;
 
     }
 
     // Needs all rabbit behaviour
     @Override
-    public void act(World world) {
-        this.world = world;
-        increaseAge();
+    public void act(World w) {
+        super.act(w);
+        System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
         if (world.isNight()) {
             //sleep();
+            //return;
         }
-        if(checkForCarnivore().isEmpty()) {
-            if (current_energy < 50) {
+        ArrayList<Animal> threats = checkForCarnivore();
+        if(threats.isEmpty()) {
+            if ( (double) current_energy/max_energy < 0.5) {
+                System.out.println("energy lvl: " + (double) current_energy/max_energy + "looking for food");
                 moveToFood();
             } else {
                 moveRandom();
             }
         } else {
-            System.out.println("Escape 2");
-            Animal threat = getNearestCarnivore();
-            escape(threat.getLocation());
+            escape(threats);
         }
         reproduce();
         // sleep();

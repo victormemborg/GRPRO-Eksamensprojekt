@@ -1,6 +1,8 @@
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -14,7 +16,7 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/test.txt", 800, 1000);
+            Program p = createProgramFromFile("data/test.txt", 800, 50);
             p.show();
             p.run();
 
@@ -51,12 +53,20 @@ public class Main {
                 Class<?> class_type = Class.forName("Actors." + class_name);
 
                 //Create specified number of instances
+                if (class_name.equals("Wolf")) {
+                    World world = p.getWorld();
+                    ArrayList<Wolf> pack = new ArrayList<>();
+                    for (int i = 0 ; i < amount ; i++) {
+                        world.setTile(Help.getRanLocWithoutType(1, world), new Wolf(world, pack));
+                        pack.add();
+                    }
+                }
                 for (int i = 0 ; i < amount ; i++) {
                     createInstance(p, class_type, territory);
                 }
 
-            } catch (Exception e) {
-                System.out.println("Error: " + e.getClass() + ", skipping line " + line_counter + " in " + path);
+            } catch (ClassNotFoundException e) {
+                System.out.println("Error, cant find class: " + e.getClass() + ", skipping line " + line_counter + " in " + path);
             }
         }
         scan.close();
@@ -85,15 +95,24 @@ public class Main {
         }  
     }
 
-    private static void createInstance(Program p, Class<?> class_type, Location territory) throws Exception {
-        World world = p.getWorld();
-        int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
-        if (territory == null) {
-            world.setTile(Help.getRanLocWithoutType(type, p), class_type.getDeclaredConstructor().newInstance());
-        } else {
-            Class<?>[] cArg = new Class[1];
-            cArg[0] = Location.class;
-            world.setTile(Help.getRanLocWithoutType(type, p), class_type.getDeclaredConstructor(cArg).newInstance(territory));
+    private static void createInstance(Program p, Class<?> class_type, Location territory){
+        try {
+            World world = p.getWorld();
+            int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
+            if (territory == null) {
+                Class<?>[] cArg = new Class[1];
+                cArg[0] = World.class;
+                world.setTile(Help.getRanLocWithoutType(type, world), class_type.getDeclaredConstructor(cArg).newInstance(world));
+            } else {
+                Class<?>[] cArg = new Class[2];
+                cArg[0] = World.class;
+                cArg[1] = Location.class;
+                world.setTile(Help.getRanLocWithoutType(type, world), class_type.getDeclaredConstructor(cArg).newInstance(world, territory));
+            }
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            System.out.println(e.getClass() + ", trying to initialize the next object");
+        } catch (IllegalArgumentException iae) {
+            System.out.println(iae.getMessage());
         }
     }
 }
