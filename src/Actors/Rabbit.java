@@ -31,6 +31,10 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         if (world == null) {
             return;
         }
+        if (dead) {
+            die();
+            return;
+        }
         super.act(w);
         System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
         if (world.isNight()) {
@@ -63,6 +67,9 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
 
     @Override
     public DisplayInformation getInformation() {
+        if (dead) {
+            return new DisplayInformation(Color.DARK_GRAY, "ghost");
+        }
         String image;
         if (age > maturity_age) {
             image = is_sleeping ? "rabbit-sleeping" : "rabbit-large";

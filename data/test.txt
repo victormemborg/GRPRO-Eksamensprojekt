@@ -1,2 +1,4 @@
-5
-rabbit 2
+7
+rabbit 1
+bear 1
+berry 1

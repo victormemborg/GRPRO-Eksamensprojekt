@@ -12,7 +12,8 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     private int age;
     private World world;
 
-    public Carcass(int energy) {
+    public Carcass(World world, int energy) {
+        this.world = world;
         this.energy = energy;
         this.age = 0;
     }

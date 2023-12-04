@@ -27,6 +27,7 @@ public abstract class Animal implements Actor {
     int age;                          // The age of the animal, measured in ingame ticks
     boolean has_reproduced_today;     // A boolean describing whether the animal has alredy reproduced today (resets every 10 ingame ticks)
     boolean is_sleeping;              // A boolean describing whether the animal is sleeping
+    boolean dead;                // Waiting frame for proper sync between carcass and animal
 
     // Initialized by a subclass:
     int max_hp;                       // The max HP for the animal
@@ -61,6 +62,7 @@ public abstract class Animal implements Actor {
         this.energy_loss_move = 10;
         this.age = 0;
         this.has_reproduced_today = false;
+        this.dead = false;
     }
 
 
@@ -102,12 +104,19 @@ public abstract class Animal implements Actor {
     }
 
     void die() {
+        //System.out.println(world.getLocation(this));
+        //System.out.println(this);
+/*         if (!dead) {
+            dead = true;
+            return;
+        } */
+        Location l = world.getLocation(this);
         try {
-            world.delete(world.getNonBlocking(this.getLocation()));
-        } catch (IllegalArgumentException ignore) {
+            world.delete(world.getNonBlocking(l));
+        } catch (IllegalArgumentException | NullPointerException ignore) {
             //do nothing
         }
-        world.setTile(world.getLocation(this), new Carcass(max_energy));
+        world.setTile(l, new Carcass(world, max_energy));
         world.delete(this);
         world = null;
     }
@@ -190,7 +199,6 @@ public abstract class Animal implements Actor {
         if (object == null) {
             return false;
         }
-        System.out.println(diet.toString() + object.getClass().getSimpleName());
         if (diet.toString().contains(object.getClass().getSimpleName())) {
             return true;
         } else {
@@ -244,7 +252,33 @@ public abstract class Animal implements Actor {
 
 
     ///////////////////////////////////////////////////////////////////////
-    ////////////////           Defence methods:           /////////////////
+    ////////////////    Defence and Detection methods:    /////////////////
+        
+    ArrayList<Animal> checkForAnimal() {
+        // check if there is an animal nearby
+        Set<Location> visible_tiles = world.getSurroundingTiles(this.getLocation(), vision_range);
+        ArrayList<Animal> animal_list = new ArrayList<>();
+        for (Location l : visible_tiles) {
+            if (world.getTile(l) instanceof Animal && world.getTile(l) != this) {
+                animal_list.add( (Animal) world.getTile(l) );
+            }
+        }
+        return animal_list;
+    }
+
+    Animal getNearestAnimal() {
+        ArrayList<Animal> animal_list = checkForAnimal();
+        int shortest_dist = Integer.MAX_VALUE;
+        Animal nearest_animal = null;
+        for (Animal a : animal_list) {
+            int dist = Help.getDistance(this.getLocation(), a.getLocation());
+            if (dist < shortest_dist) {
+                shortest_dist = dist;
+                nearest_animal = a;
+            }
+        }
+        return nearest_animal;
+    }
 
     ArrayList<Animal> checkForCarnivore() {
         // check if there is a carnivore nearby
@@ -271,6 +305,7 @@ public abstract class Animal implements Actor {
         }
         return nearest_carnivore;
     }
+    
     //Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("NonBlocking"))
     // Generates an escape route for the animal
     void escape(ArrayList<Animal> threat_list) {
