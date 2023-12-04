@@ -13,13 +13,12 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         super(world);
 
         super.max_hp = 100;
-        super.current_hp = 100;
+        super.current_hp = max_hp;
         super.max_energy = 100;
-        super.current_energy = 100;
+        super.current_energy = max_energy;
         super.maturity_age = 3;
         super.damage = 1;
         super.diet = Set.of("Berry", "Grass");
-
         super.req_energy_reproduction = 0.6;
         super.move_range = 2;
         super.vision_range = 2;
@@ -29,6 +28,9 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     // Needs all rabbit behaviour
     @Override
     public void act(World w) {
+        if (world == null) {
+            return;
+        }
         super.act(w);
         System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
         if (world.isNight()) {
@@ -38,7 +40,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         ArrayList<Animal> threats = checkForCarnivore();
         if(threats.isEmpty()) {
             if ( (double) current_energy/max_energy < 0.5) {
-                System.out.println("energy lvl: " + (double) current_energy/max_energy + "looking for food");
+                //System.out.println("energy lvl: " + (double) current_energy/max_energy + "looking for food");
                 moveToFood();
             } else {
                 moveRandom();
