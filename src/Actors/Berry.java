@@ -40,7 +40,6 @@ public class Berry extends Foliage implements DynamicDisplayInformationProvider,
         if(maxBerrys > 0){
             maxBerrys--;
         } else {
-            
             eaten = true;
         }
     }

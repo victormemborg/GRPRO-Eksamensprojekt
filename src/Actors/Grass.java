@@ -11,8 +11,8 @@ public class Grass extends Foliage implements DynamicDisplayInformationProvider,
     public Grass(World world) {
         super(world);
         this.energy = 30;
-        this.spread_chance = 0.5;
-        this.wither_chance = 0.1;
+        this.spread_chance = 0.05;
+        this.wither_chance = 0.02;
     }
 
     @Override

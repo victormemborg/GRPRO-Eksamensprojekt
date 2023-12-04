@@ -2,6 +2,7 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -15,7 +16,7 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/test.txt", 800, 500);
+            Program p = createProgramFromFile("data/test.txt", 800, 50);
             p.show();
             p.run();
 
@@ -52,6 +53,14 @@ public class Main {
                 Class<?> class_type = Class.forName("Actors." + class_name);
 
                 //Create specified number of instances
+                if (class_name.equals("Wolf")) {
+                    World world = p.getWorld();
+                    ArrayList<Wolf> pack = new ArrayList<>();
+                    for (int i = 0 ; i < amount ; i++) {
+                        world.setTile(Help.getRanLocWithoutType(1, world), new Wolf(world, pack));
+                        pack.add();
+                    }
+                }
                 for (int i = 0 ; i < amount ; i++) {
                     createInstance(p, class_type, territory);
                 }
