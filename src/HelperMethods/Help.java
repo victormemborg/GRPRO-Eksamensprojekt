@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
+
+import Actors.Animal;
+import Actors.Burrow;
 import itumulator.world.*;
 
 public class Help {
