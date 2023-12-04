@@ -18,8 +18,6 @@ public abstract class Animal implements Actor {
 
     // Initialized by Animal:
     World world;                      // The world the animal lives in
-    int current_hp;                   // The current amount of HP the animal has
-    int current_energy;               // The current amount of energy the animal has
     //double fullness;                  // A percentage value describing how full the animal is
     double req_hp_reproduction;       // A percentage value of the animals max HP, that must at least be present for reproduction
     double req_energy_reproduction;   // A percentage value of the animals max energy, that must at least be present for reproduction
@@ -28,10 +26,13 @@ public abstract class Animal implements Actor {
     int age;                          // The age of the animal, measured in ingame ticks
     boolean has_reproduced_today;     // A boolean describing whether the animal has alredy reproduced today (resets every 10 ingame ticks)
     boolean is_sleeping;              // A boolean describing whether the animal is sleeping
+    boolean dead;                // Waiting frame for proper sync between carcass and animal
 
     // Initialized by a subclass:
     int max_hp;                       // The max HP for the animal
+    int current_hp;                   // The current amount of HP the animal has
     int max_energy;                   // The max energy level for the animal
+    int current_energy;               // The current amount of energy the animal has
     int damage;                       // The damage the animal is cabable of dealing
     int maturity_age;                 // The minimum age of the animal required for reproduction. Also determines the DisplayInformation 
     int vision_range;                 // The amount of tiles the animal can see arround itself
@@ -51,8 +52,6 @@ public abstract class Animal implements Actor {
     */
     Animal(World world) {
         this.world = world;               
-        this.current_hp = max_hp;
-        this.current_energy = max_energy;
         //fullness = 1;
         this.req_hp_reproduction = 0.6;   
         this.req_energy_reproduction = 0.6;
@@ -60,6 +59,7 @@ public abstract class Animal implements Actor {
         this.energy_loss_move = 10;
         this.age = 0;
         this.has_reproduced_today = false;
+        this.dead = false;
     }
 
 
@@ -101,8 +101,21 @@ public abstract class Animal implements Actor {
     }
 
     void die() {
-        world.setTile(world.getLocation(this), new Carcass(max_energy));
+        //System.out.println(world.getLocation(this));
+        //System.out.println(this);
+        Location l = world.getLocation(this);
+        if (!dead) {
+            dead = true;
+            return;
+        }
+        try {
+            world.delete(world.getNonBlocking(l));
+        } catch (IllegalArgumentException | NullPointerException ignore) {
+            //do nothing
+        }
+        world.setTile(l, new Carcass(world, max_energy));
         world.delete(this);
+        dead = true;
     }
 
     // Returns the next location in the shortest route to the target
@@ -234,7 +247,33 @@ public abstract class Animal implements Actor {
 
 
     ///////////////////////////////////////////////////////////////////////
-    ////////////////           Defence methods:           /////////////////
+    ////////////////    Defence and Detection methods:    /////////////////
+        
+    ArrayList<Animal> checkForAnimal() {
+        // check if there is an animal nearby
+        Set<Location> visible_tiles = world.getSurroundingTiles(this.getLocation(), vision_range);
+        ArrayList<Animal> animal_list = new ArrayList<>();
+        for (Location l : visible_tiles) {
+            if (world.getTile(l) instanceof Animal && world.getTile(l) != this) {
+                animal_list.add( (Animal) world.getTile(l) );
+            }
+        }
+        return animal_list;
+    }
+
+    Animal getNearestAnimal() {
+        ArrayList<Animal> animal_list = checkForAnimal();
+        int shortest_dist = Integer.MAX_VALUE;
+        Animal nearest_animal = null;
+        for (Animal a : animal_list) {
+            int dist = Help.getDistance(this.getLocation(), a.getLocation());
+            if (dist < shortest_dist) {
+                shortest_dist = dist;
+                nearest_animal = a;
+            }
+        }
+        return nearest_animal;
+    }
 
     ArrayList<Animal> checkForCarnivore() {
         // check if there is a carnivore nearby
@@ -261,6 +300,7 @@ public abstract class Animal implements Actor {
         }
         return nearest_carnivore;
     }
+    
     //Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("NonBlocking"))
     // Generates an escape route for the animal
     void escape(ArrayList<Animal> threat_list) {
@@ -436,8 +476,12 @@ public abstract class Animal implements Actor {
         return world.getCurrentLocation();
     }
 
+
+    double getEnergyPercentage() {
+        return (double) current_energy / max_energy;
+    }
+  
     public int getVisionRange() {
         return vision_range;
     }
-
 }

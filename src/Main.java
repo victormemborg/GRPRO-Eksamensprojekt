@@ -16,7 +16,7 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/test.txt", 800, 50);
+            Program p = createProgramFromFile("data/test.txt", 800, 1000);
             p.show();
             p.run();
 
@@ -54,12 +54,15 @@ public class Main {
 
                 //Create specified number of instances
                 if (class_name.equals("Wolf")) {
+                    System.out.println("Laver en ulv");
                     World world = p.getWorld();
                     ArrayList<Wolf> pack = new ArrayList<>();
                     for (int i = 0 ; i < amount ; i++) {
-                        world.setTile(Help.getRanLocWithoutType(1, world), new Wolf(world, pack));
-                        pack.add();
+                        Wolf wolf = new Wolf(world);
+                        pack.add(wolf);
+                        world.setTile(Help.getRanLocWithoutType(1, world), wolf);
                     }
+                    System.out.println(pack);
                 }
                 for (int i = 0 ; i < amount ; i++) {
                     createInstance(p, class_type, territory);
