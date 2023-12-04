@@ -4,7 +4,6 @@ package Actors;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Arrays;
 // Custom lib
 import HelperMethods.Help;
 // Itumumulator lib
@@ -44,8 +43,6 @@ public abstract class Animal implements Actor {
 
     ///////////////////////////////////////////////////////////////////////
     /////////////////////     Abstract functions:     /////////////////////
-
-    abstract void sleep();    //Tænker umidelbart at denne skal stå for at regenere energy og ekstra liv, samt finde hjem til home?
 
 
     ///////////////////////////////////////////////////////////////////////
@@ -190,8 +187,6 @@ public abstract class Animal implements Actor {
         if (current_energy >= energy_loss_move) {
             world.move(this, loc);
             decreaseEnergy(energy_loss_move);
-        } else {
-            System.out.println(this.getClass().getName() + " is too tired to move");
         }
     }
 
@@ -403,9 +398,55 @@ public abstract class Animal implements Actor {
 
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Home methods:            /////////////////
-    /*
-        Shall contain home related methods when home is complete
-    */
+    
+    void moveToHome() {
+        if (home == null) {
+            //50 % chance to create a home or 50% to occupy one - NOT IMPLEMENTED YET
+            createHome();
+            return;
+        }
+        Location home_loc = world.getLocation(home);
+        if (Help.isSameLocations(home_loc, this.getLocation())) {
+            sleep();
+            return;
+        }
+        Location move_loc = shortestRoute(home_loc);
+        if (Help.isSameLocations(home_loc, move_loc)) {
+            world.move(this, move_loc);
+            sleep();
+        } else {
+            move(move_loc);
+        }
+    }
+
+    public void createHome() {
+        Location loc = this.getLocation();
+        if(!world.containsNonBlocking(loc) && home == null) {
+            home = new Burrow(world, this);
+            world.setTile(loc, home);
+        }
+    }
+
+    //maybe, maybe not an individual method for the subclasses?
+    public void sleep() {
+        is_sleeping = true;
+        world.remove(this);
+        while (current_energy < max_energy) {
+            current_energy += 5;
+        }
+    }
+
+    public void wakeUp() {
+        if(world.getCurrentTime() == 0 && is_sleeping) { //check first tick to move to an empty surrounding location near its home
+            world.setCurrentLocation(Help.getRandomNearbyEmptyTile(world, home.getLocation(), 3)); // radius where it can spawn around its home
+            world.setTile(world.getCurrentLocation(), this);
+            is_sleeping = false;
+        }
+    }
+
+    public Home getHome() {
+        return home;
+    }
 
 
     ///////////////////////////////////////////////////////////////////////
@@ -435,8 +476,12 @@ public abstract class Animal implements Actor {
         return world.getCurrentLocation();
     }
 
+
     double getEnergyPercentage() {
         return (double) current_energy / max_energy;
     }
-
+  
+    public int getVisionRange() {
+        return vision_range;
+    }
 }
