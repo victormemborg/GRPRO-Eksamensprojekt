@@ -1,4 +1,5 @@
-5
-rabbit 3
+6
+rabbit 1
+burrow 4
 grass 5
 berry 3
