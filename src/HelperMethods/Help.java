@@ -52,7 +52,7 @@ public class Help {
         return Math.abs(l1.getX() - l2.getX()) + Math.abs(l1.getY() - l2.getY());
     }
 
-    public static boolean doesInterfacesContain(Object object, String target) {
+    public static boolean doesInterfacesInclude(Object object, String target) {
         if (object == null) {
             return false;
         }
