@@ -3,6 +3,8 @@ package Actors;
 import java.util.ArrayList;
 import java.util.Set;
 
+import HelperMethods.Help;
+
 import java.awt.Color;
 
 import itumulator.executable.DisplayInformation;
@@ -34,7 +36,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
             return;
         }
         super.act(w);
-        if(world.isDay()) {
+        if (world.isDay()) {
             dayTimeBehaviour();
         } else {
             nightTimeBehaviour();
@@ -48,15 +50,22 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         if (!is_sleeping) {
             moveToHome();
         }
-        return; // stop further execution if it's night
+        if (getHome() == null && !is_sleeping) {
+            moveRandom();
+        }
+        return;
     }
 
     private void dayTimeBehaviour() {
         wakeUp();
+        if (home == null) {
+            findSurroundingBurrows(this);
+        }
         ArrayList<Animal> threats = checkForCarnivore();
-        if(threats.isEmpty()) {
-            if ( (double) current_energy/max_energy < 0.5) {
-                //System.out.println("energy lvl: " + (double) current_energy/max_energy + "looking for food");
+        if (threats.isEmpty()) {
+            if ((double) current_energy / max_energy < 0.5) {
+                // System.out.println("energy lvl: " + (double) current_energy/max_energy +
+                // "looking for food");
                 moveToFood();
             } else {
                 moveRandom();
@@ -65,6 +74,27 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
             escape(threats);
         }
         reproduce();
+    }
+
+    /**
+     * Checks for surrounding burrows and sets home to the first burrow found.
+     * Not quite happy with this method, but it works for now - please take a look at it
+     * @param animal the animal that is looking for a burrow
+     */
+    private void findSurroundingBurrows(Animal animal) {
+        Set<Location> nearby_tiles = world.getSurroundingTiles(getLocation(), vision_range);
+        for (Location l : nearby_tiles) {
+            if (world.getTile(l) instanceof Burrow) {
+                Burrow burrow = (Burrow) world.getTile(l);
+                if (!burrow.isBigHole() && !burrow.isFull() && animal instanceof Rabbit) {
+                    setHome(burrow);
+                    return;
+                } else if (burrow.isBigHole() && !burrow.isFull() && animal instanceof Wolf) {
+                    setHome(burrow);
+                    return;
+                }
+            }
+        }
     }
 
     @Override

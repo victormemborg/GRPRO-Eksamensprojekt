@@ -4,6 +4,7 @@ import itumulator.world.*;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 
@@ -41,18 +42,6 @@ public class Burrow extends Home implements DynamicDisplayInformationProvider {
 
     public boolean isBigHole() {
         return big_hole;
-    }
-    
-    //NOT DONE
-    public void findSurroundingBurrows(Animal animal) {
-        Location location = world.getLocation(animal);
-        Set<Location> surrounding_locations = world.getSurroundingTiles(location, animal.getVisionRange());
-        for(Location l : surrounding_locations) {
-            if(world.getTile(l) instanceof Burrow) {
-                Burrow burrow = (Burrow) world.getTile(l);
-                burrow.occupyHome(animal);
-            }
-        }
     }
 
     public DisplayInformation getInformation() {
