@@ -106,11 +106,11 @@ public abstract class Animal implements Actor {
     void die() {
         //System.out.println(world.getLocation(this));
         //System.out.println(this);
-/*         if (!dead) {
+        Location l = world.getLocation(this);
+        if (!dead) {
             dead = true;
             return;
-        } */
-        Location l = world.getLocation(this);
+        }
         try {
             world.delete(world.getNonBlocking(l));
         } catch (IllegalArgumentException | NullPointerException ignore) {
@@ -118,7 +118,7 @@ public abstract class Animal implements Actor {
         }
         world.setTile(l, new Carcass(world, max_energy));
         world.delete(this);
-        world = null;
+        dead = true;
     }
 
     // Returns the next location in the shortest route to the target
@@ -433,6 +433,10 @@ public abstract class Animal implements Actor {
 
     Location getLocation() {
         return world.getCurrentLocation();
+    }
+
+    double getEnergyPercentage() {
+        return (double) current_energy / max_energy;
     }
 
 }

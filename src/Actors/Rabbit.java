@@ -28,9 +28,6 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     // Needs all rabbit behaviour
     @Override
     public void act(World w) {
-        if (world == null) {
-            return;
-        }
         if (dead) {
             die();
             return;
