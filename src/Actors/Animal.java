@@ -79,13 +79,15 @@ public abstract class Animal implements Actor {
         //Must be extended by subclass here....    
     }
 
-    public void attacked(int dmg) {
+    public void attacked(int dmg, Animal agressor) {
         decreaseHp(dmg);
         //Must be extended by subclass here....
     }
 
     void attack(Animal victim) {
-        victim.attacked(damage);
+        if (Help.getDistance(this.getLocation(), victim.getLocation()) <= 1) { // Magic number
+            victim.attacked(damage, this);
+        }
         //Might be useful to extend here in subclass....
     }
 
@@ -95,10 +97,10 @@ public abstract class Animal implements Actor {
 
     void passiveHpRegen() {
         float energy_ratio = current_energy / max_energy;
-        int healing_factor = max_hp / 10; //Magic number
+        int healing_factor = max_hp / 10;    // Magic number
         int heal_amount = Math.round(healing_factor*energy_ratio);
         increaseHp(heal_amount);
-        decreaseEnergy(heal_amount / 2); // Another magic number
+        decreaseEnergy(heal_amount / 2);     // Another magic number
     }
 
     void die() {
@@ -245,12 +247,8 @@ public abstract class Animal implements Actor {
         Set<Location> visible_tiles = world.getSurroundingTiles(this.getLocation(), vision_range);
         ArrayList<Animal> carnivore_list = new ArrayList<>();
         for (Location l : visible_tiles) {
-            try {
-                if (Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("Carnivore")) {
-                    carnivore_list.add( (Animal) world.getTile(l) );
-                }
-            } catch (NullPointerException npe) {
-                //Gets here if world.getTile(l) returns null. Does nothing. Just skips the step
+            if (Help.doesInterfacesContain(world.getTile(l), "Carnivore")) {
+                carnivore_list.add( (Animal) world.getTile(l) );
             }
         }
         return carnivore_list;
@@ -310,7 +308,6 @@ public abstract class Animal implements Actor {
         try {
             Object tile = world.getNonBlocking(this.getLocation());
             if (isPartOfDiet(tile)) {
-                System.out.println(tile);
                 return (Eatable) tile;
             }
         } catch (IllegalArgumentException iae) {

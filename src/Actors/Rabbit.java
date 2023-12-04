@@ -33,7 +33,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
         if (world.isNight()) {
             //sleep();
-            return;
+            //return;
         }
         ArrayList<Animal> threats = checkForCarnivore();
         if(threats.isEmpty()) {
