@@ -25,7 +25,7 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
 
     private void decay() {
         age++;
-        if (age > 20) { // magic number
+        if (age > 40) { // magic number
             world.delete(this);
         }
     }

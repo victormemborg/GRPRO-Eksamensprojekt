@@ -101,8 +101,6 @@ public abstract class Animal implements Actor {
     }
 
     void die() {
-        //System.out.println(world.getLocation(this));
-        //System.out.println(this);
         Location l = world.getLocation(this);
         if (!dead) {
             dead = true;
@@ -115,7 +113,6 @@ public abstract class Animal implements Actor {
         }
         world.setTile(l, new Carcass(world, max_energy));
         world.delete(this);
-        dead = true;
     }
 
     // Returns the next location in the shortest route to the target
@@ -227,20 +224,19 @@ public abstract class Animal implements Actor {
     }
 
     ArrayList<Object> getObjectsOfClass(String target, ArrayList<Location> area) {
-        try {
-            ArrayList<Object> class_list = new ArrayList<>();
-            for (Location l : area) {
+        ArrayList<Object> class_list = new ArrayList<>();
+        for (Location l : area) {
+            try {
                 Object tile = world.getTile(l);
-                Class<?> class_type = Class.forName(target);
+                Class<?> class_type = Class.forName("Actors." + target);
                 if (class_type.isInstance(tile)) {
                     class_list.add(tile);
                 }
+            } catch (ClassNotFoundException ignore) {
+                // do nothing
             }
-            return class_list;
-        } catch (ClassNotFoundException cnfe) {
-            ArrayList<Object> list = new ArrayList<>();
-            return list;
         }
+        return class_list;
     }
 
     Object getNearestObject(ArrayList<Object> object_list) {
@@ -265,9 +261,10 @@ public abstract class Animal implements Actor {
         if (!Help.isSameLocations(this.getLocation(), moveLoc)) {
             move(moveLoc);
         }
-        return Help.getDistance(moveLoc, target);
+        System.out.println(Help.getDistance(moveLoc, target));
+        System.out.println(Help.getDistance(this.getLocation(), target));
+        return Help.getDistance(this.getLocation(), target);
     }
-
 
 
     ArrayList<Location> getEmptyTilesWithinRange(int range) {
