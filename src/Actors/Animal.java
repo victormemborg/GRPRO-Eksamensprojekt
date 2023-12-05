@@ -261,9 +261,7 @@ public abstract class Animal implements Actor {
         if (!Help.isSameLocations(this.getLocation(), moveLoc)) {
             move(moveLoc);
         }
-        System.out.println(Help.getDistance(moveLoc, target));
-        System.out.println(Help.getDistance(this.getLocation(), target));
-        return Help.getDistance(this.getLocation(), target);
+        return Help.getDistance(moveLoc, target);
     }
 
 
@@ -280,10 +278,8 @@ public abstract class Animal implements Actor {
 
     Location getClosestEmptyLocation(Location target) {
         ArrayList<Location> possible_paths = getEmptyTilesWithinRange(move_range);
-        possible_paths.add(this.getLocation()); // Let it stay if desirable
-
-        int min_dist = Integer.MAX_VALUE;
-        Location closest_path = possible_paths.get(0);
+        Location closest_path = this.getLocation(); // Let it stay if desirable. Set this to possible_paths.get(0) and add possible_paths.add(this.getLocation()) if you want randomization
+        int min_dist = Help.getDistance(closest_path, target);
         for (Location path : possible_paths) {
             int dist = Help.getDistance(path, target);
             if (dist < min_dist) {
@@ -578,7 +574,7 @@ public abstract class Animal implements Actor {
     }
 
     Location getLocation() {
-        return world.getCurrentLocation();
+        return world.getLocation(this);
     }
 
 

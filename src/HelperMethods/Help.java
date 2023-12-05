@@ -49,8 +49,8 @@ public class Help {
     }
 
     public static int getDistance(Location l1, Location l2) {
-        System.out.println(Math.abs(l1.getX() - l2.getX()));
-        System.out.println(Math.abs(l1.getY() - l2.getY()));
+        //System.out.println(Math.abs(l1.getX() - l2.getX()));
+        //System.out.println(Math.abs(l1.getY() - l2.getY()));
         return Math.abs(l1.getX() - l2.getX()) + Math.abs(l1.getY() - l2.getY());
     }
 

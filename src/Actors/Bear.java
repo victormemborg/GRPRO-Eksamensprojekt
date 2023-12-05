@@ -32,7 +32,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         super.diet = Set.of("Berry", "Carcass");
         super.req_energy_reproduction = 0.6;
         super.move_range = 1;
-        super.vision_range = 2;
+        super.vision_range = 3;
         //super.home = home;
         afraid_of = null;
         afraid_time = 0;
@@ -48,6 +48,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
     @Override
     public void act(World w) {
         if (dead) {
+            world.move(this, this.getLocation());
             die();
             return;
         }
@@ -63,6 +64,8 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
 
         super.act(w);
         System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
+        //System.out.println("afraid of: " + afraid_of + "           dadadadadadadadadadadadadadadadadadad");
+        //System.out.println("mad at: " + mad_at + "           efefefefefefefefefefefefefefefef");
 
         // Sleep if night
 /*         if (world.isNight()) {
@@ -114,10 +117,12 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
             afraid_time = 0;
             return false;
         }
+        System.out.println(Help.getDistance(this.getLocation(), afraid_of.getLocation()));
         if (Help.getDistance(this.getLocation(), afraid_of.getLocation()) <= vision_range) { // Magic number
             ArrayList<Animal> threat = new ArrayList<>();
             threat.add(afraid_of);
             escape(threat);
+            System.out.println("Escaping");
             return true;
         }
         return false;
@@ -164,7 +169,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
             return false;
         }
         Animal target = (Animal) getNearestObject(target_list);
-        if (moveTo(target.getLocation()) == 0) {
+        if (moveTo(target.getLocation()) == 1) {
             System.out.println("Attacking: " + target);
             attack(target);
         }
@@ -203,7 +208,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         }
         String image;
         if (age > maturity_age) {
-            image = is_sleeping ? "bear-sleeping" : "bear-large";
+            image = is_sleeping ? "bear-sleeping" : "bear";
         } else {
             image = is_sleeping ? "bear-small-sleeping" : "bear-small";
         }
