@@ -1,12 +1,11 @@
 package Actors;
 
+import HelperMethods.Help;
 import java.util.ArrayList;
 import java.util.Set;
-
-import HelperMethods.Help;
-
 import java.awt.Color;
 
+import HelperMethods.Help;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.*;
@@ -44,11 +43,11 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     }
 
     private void nightTimeBehaviour() {
-        if (getHome() == null) {
+/*         if (getHome() == null) {
             createHome();
-        }
+        } */
         if (!is_sleeping) {
-            moveToHome();
+            moveToHome(); // Hvis det skal sættes sådan her op, så skal createHome() garantere at skabe et home. Ellers får vi NullPointerException
         }
         if (getHome() == null && !is_sleeping) {
             moveRandom();
@@ -58,21 +57,16 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
 
     private void dayTimeBehaviour() {
         wakeUp();
-        if (home == null) {
-            findSurroundingBurrows(this);
-        }
-        ArrayList<Animal> threats = checkForCarnivore();
-        if (threats.isEmpty()) {
-            if ((double) current_energy / max_energy < 0.5) {
-                // System.out.println("energy lvl: " + (double) current_energy/max_energy +
-                // "looking for food");
-                moveToFood();
-            } else {
-                moveRandom();
-            }
-        } else {
+        ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
+        ArrayList<Animal> threats = Help.castArrayList(getObjectsWithInterface("Carnivore", visible_tiles));
+        if (!threats.isEmpty()) {
             escape(threats);
+            return;
         }
+        if (getEnergyPercentage() < 0.5) {
+            if (searchForFoodWthin(visible_tiles)) {return;}
+        }
+        moveRandom();
         reproduce();
     }
 
@@ -103,7 +97,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
             return new DisplayInformation(Color.DARK_GRAY, "ghost");
         }
         String image;
-        if (age > maturity_age) {
+        if (getIsMature()) {
             image = is_sleeping ? "rabbit-sleeping" : "rabbit-large";
         } else {
             image = is_sleeping ? "rabbit-small-sleeping" : "rabbit-small";

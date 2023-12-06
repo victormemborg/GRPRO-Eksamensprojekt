@@ -3,6 +3,7 @@ package HelperMethods;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -52,6 +53,8 @@ public class Help {
     }
 
     public static int getDistance(Location l1, Location l2) {
+        //System.out.println(Math.abs(l1.getX() - l2.getX()));
+        //System.out.println(Math.abs(l1.getY() - l2.getY()));
         return Math.abs(l1.getX() - l2.getX()) + Math.abs(l1.getY() - l2.getY());
     }
 
@@ -97,5 +100,13 @@ public class Help {
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException ignore) {
             return null;
         }
+    }
+
+    public static <newType, oldType> ArrayList<newType> castArrayList(ArrayList<oldType> list){
+        ArrayList<newType> newlyCastedArrayList = new ArrayList<newType>();
+        for(oldType listObject : list){
+            newlyCastedArrayList.add((newType)listObject);
+        }
+        return newlyCastedArrayList;
     }
 }

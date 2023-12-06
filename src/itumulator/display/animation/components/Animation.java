@@ -4,7 +4,7 @@ import itumulator.display.animation.ObjectInformation;
 import itumulator.world.Location;
 
 /**
- * An abstract representation of an animation which produces individual draw actions ({@link AnimationFrame)}.
+ * An abstract representation of an animation which produces individual draw actions ({@link AnimationFrame}).
  */
 public abstract class Animation implements Comparable<Animation>{
     protected ObjectInformation oi;

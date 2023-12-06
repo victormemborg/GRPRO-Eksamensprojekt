@@ -72,13 +72,16 @@ public class Simulator {
         // iterate all actors of the world and execute their actions.
         Map<Object, Location> entities = world.getEntities();
         for(Object o : entities.keySet()){
-            Location l = entities.get(o);
             if(o instanceof Actor){
-                world.setCurrentLocation(l); // update current location.
+                if(!world.contains(o)) continue;
+                Location l = null;
+                if(world.isOnTile(o)) l = world.getLocation(o);
+                world.setCurrentLocation(l);
                 ((Actor)o).act(world);
             }
         }
         entities = null; // to avoid memory leak
+        System.gc(); // force garbage collection to reduce leak
         // Here removed painting cycle (i.e., canvas.paintImage()) as I believe it was unecessary.
         canvas.paintImage(delay); //repaint according to updated simulation.
     }
@@ -141,6 +144,7 @@ public class Simulator {
                             Thread.currentThread().interrupt();
                             return;
                         }
+                        canvas.acquireRenderPermit(); // to not produce too many images
                         simulate();
                         if (delay == 0){
                             continue;
