@@ -56,10 +56,11 @@ public abstract class Animal implements Actor {
         this.req_hp_reproduction = 0.6;   
         this.req_energy_reproduction = 0.6;
         this.energy_loss_reproduction = 0.5;
-        this.energy_loss_move = 10;
+        this.energy_loss_move = 0;
         this.age = 0;
         this.has_reproduced_today = false;
         this.dead = false;
+        this.home = null;
     }
 
 
@@ -344,7 +345,8 @@ public abstract class Animal implements Actor {
             createHome();
             return;
         }
-        if (moveTo(world.getLocation(home)) == 0) { // We somehow get here even though home is null
+        System.out.println(home);
+        if (moveTo(home.getLocation()) == 0) { // We somehow get here even though home is null
             sleep();
         }
     }
@@ -352,12 +354,19 @@ public abstract class Animal implements Actor {
     public void createHome() { 
         Location loc = this.getLocation();
         try {
-            if(!(world.getNonBlocking(loc) instanceof Home)) {
+            if ( !(world.getNonBlocking(loc) instanceof Home) ) {
                 world.delete(world.getNonBlocking(loc));
             }
-        } catch (IllegalArgumentException ignore) {} //if there is no nonblocking object at the location, just set the home
-        home = new Burrow(world, this);
-        world.setTile(loc, home);    
+        } catch (IllegalArgumentException ignore) { 
+            //if there is no nonblocking object at the location, just set the home
+        }
+        try {
+            Home new_home = new Burrow(world, this);
+            world.setTile(loc, new_home);
+            home = new_home;
+        } catch (IllegalArgumentException ignore2) {
+            // do nothing
+        }
     }
 
     //maybe, maybe not an individual method for the subclasses?
@@ -369,15 +378,17 @@ public abstract class Animal implements Actor {
         }
     }
 
-    public void wakeUp() {
+    public boolean wakeUp() {
         try {
-            if(world.getCurrentTime() == 0 && is_sleeping) { //check first tick to move to an empty surrounding location near its home
-                world.setCurrentLocation(Help.getRandomNearbyEmptyTile(world, home.getLocation(), 1)); // radius where it can spawn around its home
+            if(is_sleeping) { //check first tick to move to an empty surrounding location near its home
+                world.setCurrentLocation(Help.getRandomNearbyEmptyTile(world, home.getLocation(), vision_range)); // radius where it can spawn around its home
                 world.setTile(world.getCurrentLocation(), this);
                 is_sleeping = false;
             }
+            return true;
         } catch (NullPointerException npe) {
             System.out.println("No empty tile found near home.. trying again next tick");
+            return false;
         }
     }
 

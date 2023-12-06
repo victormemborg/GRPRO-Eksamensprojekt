@@ -56,7 +56,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     }
 
     private void dayTimeBehaviour() {
-        wakeUp();
+        if (!wakeUp()) { return; }
         ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
         ArrayList<Animal> threats = Help.castArrayList(getObjectsWithInterface("Carnivore", visible_tiles));
         if (!threats.isEmpty()) {
