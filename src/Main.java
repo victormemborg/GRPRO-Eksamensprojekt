@@ -34,7 +34,7 @@ public class Main {
      Returns an instances of Program with the specifications given by
      its arguments and the specified txt-file
     */
-    private static Program createProgramFromFile(String path, int display_size, int delay) throws FileNotFoundException {
+    public static Program createProgramFromFile(String path, int display_size, int delay) throws FileNotFoundException {
         Scanner scan = new Scanner(new File(path));
         Program p = new Program(Integer.parseInt(scan.nextLine()), display_size, delay);
 

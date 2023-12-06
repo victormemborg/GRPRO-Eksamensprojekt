@@ -2,10 +2,10 @@ package Actors;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.awt.Color;
+import java.util.Arrays;
 
 import HelperMethods.Help;
-
-import java.awt.Color;
 
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
@@ -33,6 +33,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         super.req_energy_reproduction = 0.6;
         super.move_range = 1;
         super.vision_range = 3;
+
         //super.home = home;
         afraid_of = null;
         afraid_time = 0;
@@ -48,7 +49,6 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
     @Override
     public void act(World w) {
         if (dead) {
-            world.move(this, this.getLocation());
             die();
             return;
         }
@@ -73,7 +73,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
 
 
     private void dayTimeBehaviour() {
-        //wakeUp()
+        //if (!wakeUp()) { return; }
 
         // Check if the "afraid_of-animal" is nearby
         if (checkForAfraidOfAnimal()) { return; }
@@ -127,8 +127,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
             return false;
         }
         if (Help.getDistance(this.getLocation(), afraid_of.getLocation()) <= vision_range) { // Magic number
-            ArrayList<Animal> threat = new ArrayList<>();
-            threat.add(afraid_of);
+            ArrayList<Animal> threat = new ArrayList<>(Arrays.asList(afraid_of));
             escape(threat);
             return true;
         }
@@ -149,23 +148,11 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
             return false;
         }
         if (Help.getDistance(this.getLocation(), mad_at.getLocation()) <= vision_range) { // Magic number
-            ArrayList<Object> target = new ArrayList<>();
-            target.add(mad_at);
+            ArrayList<Object> target = new ArrayList<>(Arrays.asList(mad_at));
             approachAndAttackNearest(target);
             return true;
         }
         return false;
-    }
-
-    boolean approachAndAttackNearest(ArrayList<Object> target_list) { // Maybe move to Animal.java
-        if (target_list.isEmpty()) {
-            return false;
-        }
-        Animal target = (Animal) getNearestObject(target_list);
-        if (moveTo(target.getLocation()) == 1) {
-            attack(target);
-        }
-        return true;
     }
 
     @Override
@@ -177,8 +164,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
     public void attacked(int dmg, Animal agressor){
         super.attacked(dmg, agressor);
         if ( ((double) current_hp / agressor.getHp()) < 0.75) { //if the agressor has around 30-35 % more health than the bear
-            ArrayList<Animal> threat = new ArrayList<>();
-            threat.add(agressor);
+            ArrayList<Animal> threat = new ArrayList<>(Arrays.asList(agressor));
             escape(threat);
             afraid_of = agressor;
             afraid_time = 0;
@@ -195,7 +181,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
             return new DisplayInformation(Color.DARK_GRAY, "ghost");
         }
         String image;
-        if (age > maturity_age) {
+        if (getIsMature()) {
             image = is_sleeping ? "bear-sleeping" : "bear";
         } else {
             image = is_sleeping ? "bear-small-sleeping" : "bear-small";

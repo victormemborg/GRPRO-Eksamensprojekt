@@ -56,11 +56,10 @@ public abstract class Animal implements Actor {
         this.req_hp_reproduction = 0.6;   
         this.req_energy_reproduction = 0.6;
         this.energy_loss_reproduction = 0.5;
-        this.energy_loss_move = 0;
+        this.energy_loss_move = 10;
         this.age = 0;
         this.has_reproduced_today = false;
         this.dead = false;
-        this.home = null;
     }
 
 
@@ -108,7 +107,11 @@ public abstract class Animal implements Actor {
             return;
         }
         try {
-            world.delete(world.getNonBlocking(l));
+            Object object = world.getNonBlocking(l);
+            if (object instanceof Home) {
+                return;
+            }
+            world.delete(object);
         } catch (IllegalArgumentException | NullPointerException ignore) {
             //do nothing
         }
@@ -258,17 +261,20 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     ///////////////          Reproduction methods:          ///////////////
 
-    public void reproduce() {
+    public Animal reproduce() {
+        Animal baby = null;
         if (!getIsMature() || has_reproduced_today) {
-            return;
+            return baby;
         }
         ArrayList<Animal> partner_list = Help.castArrayList(getObjectsOfClass(this.getClass().getSimpleName(), getSurroundingTilesAsList(1)));
         for (Animal partner : partner_list) {
-            if (partner.getIsMature() && !partner.getHasReproducedToday()) {
-                createBaby();
+            if (partner.getIsMature() && !partner.getHasReproducedToday() && !this.getHasReproducedToday()) {
+                baby = createBaby();
                 setReproduceProperties(this, partner);
+                return baby;
             }
         }
+        return baby;
     }
 
     private void setReproduceProperties(Animal engager, Animal partner) {
@@ -278,12 +284,14 @@ public abstract class Animal implements Actor {
         partner.has_reproduced_today = true;
     }
 
-    private void createBaby() {
+    private Animal createBaby() {
         Location locationForBaby = Help.getRandomNearbyEmptyTile(world, this.getLocation(), 2);
         Animal baby = (Animal) Help.createNewInstanceWithArg(this, world);
         if (locationForBaby != null && baby != null) {
             world.setTile(locationForBaby, baby);
+            return baby;
         }
+        return null;
     }
 
 
@@ -313,6 +321,17 @@ public abstract class Animal implements Actor {
         }
         //Move to the escape route
         move(best_route);
+    }
+
+    boolean approachAndAttackNearest(ArrayList<Object> target_list) { // Maybe move to Animal.java
+        if (target_list.isEmpty()) {
+            return false;
+        }
+        Animal target = (Animal) getNearestObject(target_list);
+        if (moveTo(target.getLocation()) == 1) {
+            attack(target);
+        }
+        return true;
     }
 
 
@@ -345,7 +364,6 @@ public abstract class Animal implements Actor {
             createHome();
             return;
         }
-        System.out.println(home);
         if (moveTo(home.getLocation()) == 0) { // We somehow get here even though home is null
             sleep();
         }
@@ -444,7 +462,7 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Get methods:             /////////////////
 
-    int getHp() {
+    public int getHp() {
         return current_hp;
     }
 
