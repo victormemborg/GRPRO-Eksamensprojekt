@@ -63,32 +63,12 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
             escape(threats);
             return;
         }
+        findSurroundingBurrows();
         if (getEnergyPercentage() < 0.5) {
             if (searchForFoodWthin(visible_tiles)) {return;}
         }
         moveRandom();
         reproduce();
-    }
-
-    /**
-     * Checks for surrounding burrows and sets home to the first burrow found.
-     * Not quite happy with this method, but it works for now - please take a look at it
-     * @param animal the animal that is looking for a burrow
-     */
-    private void findSurroundingBurrows(Animal animal) {
-        Set<Location> nearby_tiles = world.getSurroundingTiles(getLocation(), vision_range);
-        for (Location l : nearby_tiles) {
-            if (world.getTile(l) instanceof Burrow) {
-                Burrow burrow = (Burrow) world.getTile(l);
-                if (!burrow.isBigHole() && !burrow.isFull() && animal instanceof Rabbit) {
-                    setHome(burrow);
-                    return;
-                } else if (burrow.isBigHole() && !burrow.isFull() && animal instanceof Wolf) {
-                    setHome(burrow);
-                    return;
-                }
-            }
-        }
     }
 
     @Override

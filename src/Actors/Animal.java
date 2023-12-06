@@ -236,6 +236,23 @@ public abstract class Animal implements Actor {
         return tiles_list;
     }
 
+    /**
+     * Checks for surrounding burrows and sets home to the first burrow found.
+     * Not quite happy with this method, but it works for now - please take a look at it
+     */
+    void findSurroundingBurrows() {
+        ArrayList<Burrow> burrow_list = Help.castArrayList(getObjectsOfClass("Burrow", getSurroundingTilesAsList(vision_range))); // get all burrows within vision range
+        for (Burrow burrow : burrow_list) {
+            if (!burrow.isBigHole() && !burrow.isFull() && this instanceof Rabbit) {
+                setHome(burrow);
+                return;
+            } else if (burrow.isBigHole() && !burrow.isFull() && this instanceof Wolf) {
+                setHome(burrow);
+                return;
+            }
+        }
+    }
+
 
     ///////////////////////////////////////////////////////////////////////
     ///////////////          Reproduction methods:          ///////////////
