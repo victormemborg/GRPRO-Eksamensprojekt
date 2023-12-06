@@ -18,7 +18,6 @@ public abstract class Animal implements Actor {
 
     // Initialized by Animal:
     World world;                      // The world the animal lives in
-    //double fullness;                  // A percentage value describing how full the animal is
     double req_hp_reproduction;       // A percentage value of the animals max HP, that must at least be present for reproduction
     double req_energy_reproduction;   // A percentage value of the animals max energy, that must at least be present for reproduction
     double energy_loss_reproduction;  // The amount of energy lost per reproduction
@@ -26,7 +25,7 @@ public abstract class Animal implements Actor {
     int age;                          // The age of the animal, measured in ingame ticks
     boolean has_reproduced_today;     // A boolean describing whether the animal has alredy reproduced today (resets every 10 ingame ticks)
     boolean is_sleeping;              // A boolean describing whether the animal is sleeping
-    boolean dead;                // Waiting frame for proper sync between carcass and animal
+    boolean dead;                     // Waiting frame for proper sync between carcass and animal
 
     // Initialized by a subclass:
     int max_hp;                       // The max HP for the animal
@@ -44,6 +43,8 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     /////////////////////     Abstract functions:     /////////////////////
 
+    // No abstract functions atm
+
 
     ///////////////////////////////////////////////////////////////////////
     /////////////////////         Constructor         /////////////////////
@@ -51,8 +52,7 @@ public abstract class Animal implements Actor {
         Initializes generic animal fields 
     */
     Animal(World world) {
-        this.world = world;               
-        //fullness = 1;
+        this.world = world;
         this.req_hp_reproduction = 0.6;   
         this.req_energy_reproduction = 0.6;
         this.energy_loss_reproduction = 0.5;
@@ -82,7 +82,7 @@ public abstract class Animal implements Actor {
     }
 
     void attack(Animal victim) {
-        if (Help.getDistance(this.getLocation(), victim.getLocation()) <= 1) { // Magic number
+        if (Help.getDistance(this.getLocation(), victim.getLocation()) == 1) {
             victim.attacked(damage, this);
         }
         //Might be useful to extend here in subclass....
@@ -101,7 +101,7 @@ public abstract class Animal implements Actor {
     }
 
     void die() {
-        Location l = world.getLocation(this);
+        Location l = this.getLocation();
         if (!dead) {
             dead = true;
             return;
@@ -115,78 +115,6 @@ public abstract class Animal implements Actor {
         world.delete(this);
     }
 
-    // Returns the next location in the shortest route to the target
-    Location shortestRoute(Location target) {
-        Set<Location> neighbors = world.getSurroundingTiles(move_range);
-        //Removes locations that contains a blocking object
-        ArrayList<Location> routes = new ArrayList<>();
-        for (Location l : neighbors) {
-            if(world.isTileEmpty(l)) {
-                routes.add(l);
-            }
-        }
-        // check which of the surrounding tiles is closest to the target
-        Location closest_location = null;
-        int closest_distance = Integer.MAX_VALUE;
-        for(Location l : routes) {
-            int distance = Help.getDistance(l, target);
-            if(distance < closest_distance) {
-                closest_location = l;
-                closest_distance = distance;
-            }
-        }
-        return closest_location;
-    }
-
-    void increaseEnergy(int energy) {
-        int potential_energy = current_energy + energy;
-        if (potential_energy > max_energy) {
-            current_energy = max_energy;
-        } else {
-            current_energy = potential_energy;
-        }
-    }
-
-    void decreaseEnergy(int energy) {
-        int potential_energy = current_energy - energy;
-        if (potential_energy < 0) {
-            current_energy = 0;
-        } else {
-            current_energy = potential_energy;
-        }
-    }
-
-    void increaseHp(int amount) {
-        int potential_hp = current_hp + amount;
-        if (potential_hp > max_hp) {
-            current_hp = max_hp;
-        } else {
-            current_hp = potential_hp;
-        }
-    }
-
-    void decreaseHp(int amount) {
-        if (current_hp - amount <= 0) {
-            die();
-        } else {
-            current_hp -= amount;
-        }
-    }
-
-    void moveRandom() {
-        Location ran_loc = Help.getRandomNearbyEmptyTile(world, this.getLocation(), move_range);
-        if (ran_loc != null) {
-            move(ran_loc);
-        }
-    }
-
-    void move(Location loc) {
-        if (current_energy >= energy_loss_move) {
-            world.move(this, loc);
-            decreaseEnergy(energy_loss_move);
-        }
-    }
-
     boolean isPartOfDiet(Object object) {
         if (object == null) {
             return false;
@@ -198,7 +126,29 @@ public abstract class Animal implements Actor {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void move(Location loc) {
+        if (current_energy >= energy_loss_move && loc != null) {
+            world.move(this, loc);
+            decreaseEnergy(energy_loss_move);
+        }
+    }
+
+    //Moves the Animal to the empty tile closest to its target. Returns the distance from the new location to the target
+    int moveTo(Location target) {
+        Location moveLoc = getClosestEmptyLocation(target);
+        if (!Help.isSameLocations(this.getLocation(), moveLoc)) {
+            move(moveLoc);
+        }
+        return Help.getDistance(moveLoc, target);
+    }
+
+    void moveRandom() {
+        Location ran_loc = Help.getRandomNearbyEmptyTile(world, this.getLocation(), move_range);
+        move(ran_loc);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////           Scouting methods:            ////////////////
 
     ArrayList<Object> getObjectsWithInterface(String target, ArrayList<Location> area) {
         ArrayList<Object> result_list = new ArrayList<>();
@@ -211,7 +161,6 @@ public abstract class Animal implements Actor {
         return result_list;
     }
 
-    //getObjectsInDiet(home.getArea())
     ArrayList<Object> getObjectsInDiet(ArrayList<Location> area) {
         ArrayList<Object> diet_list = new ArrayList<>();
         for (Location l : area) {
@@ -240,10 +189,7 @@ public abstract class Animal implements Actor {
     }
 
     Object getNearestObject(ArrayList<Object> object_list) {
-        if (object_list.isEmpty()) {
-            return null;
-        }
-        Object nearest_object = object_list.get(0);
+        Object nearest_object = null;
         for (Object o : object_list) {
             int min_dist = Integer.MAX_VALUE;
             int dist = Help.getDistance(this.getLocation(), world.getLocation(o));
@@ -254,16 +200,6 @@ public abstract class Animal implements Actor {
         }
         return nearest_object;
     }
-
-    //Moves the Animal to the empty tile closest to its target. Returns the distance from the new location to the target;
-    int moveTo(Location target) {
-        Location moveLoc = getClosestEmptyLocation(target);
-        if (!Help.isSameLocations(this.getLocation(), moveLoc)) {
-            move(moveLoc);
-        }
-        return Help.getDistance(moveLoc, target);
-    }
-
 
     ArrayList<Location> getEmptyTilesWithinRange(int range) {
         Set<Location> tiles = world.getSurroundingTiles(this.getLocation(), range);
@@ -301,8 +237,6 @@ public abstract class Animal implements Actor {
     }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     ///////////////////////////////////////////////////////////////////////
     ///////////////          Reproduction methods:          ///////////////
 
@@ -310,24 +244,12 @@ public abstract class Animal implements Actor {
         if (!getIsMature()) {
             return;
         }
-        Set<Location> neighbours = world.getSurroundingTiles();
-        for (Location n : neighbours) {
-            Object nearbyObject = world.getTile(n);
-            if (!(nearbyObject instanceof Animal)) {
-                continue;
+        ArrayList<Animal> partner_list = Help.castArrayList(getObjectsOfClass(this.getClass().getSimpleName(), getSurroundingTilesAsList(1)));
+        for (Animal partner : partner_list) {
+            if (partner.getIsMature() && !partner.getHasReproducedToday()) {
+                createBaby();
+                setReproduceProperties(this, partner);
             }
-            Animal partner = (Animal) nearbyObject;
-            if (this == partner) {
-                continue;
-            }
-            if (this.getClass() != partner.getClass()) {
-                continue;
-            }
-            if (!partner.getIsMature() || partner.has_reproduced_today) {
-                continue;
-            }
-            createBaby();
-            setReproduceProperties(this, partner);
         }
     }
 
@@ -339,7 +261,7 @@ public abstract class Animal implements Actor {
     }
 
     private void createBaby() {
-        Location locationForBaby = Help.getRandomNearbyEmptyTile(world, world.getCurrentLocation(), 2);
+        Location locationForBaby = Help.getRandomNearbyEmptyTile(world, this.getLocation(), 2);
         Animal baby = (Animal) Help.createNewInstanceWithArg(this, world);
         if (locationForBaby != null && baby != null) {
             world.setTile(locationForBaby, baby);
@@ -348,71 +270,13 @@ public abstract class Animal implements Actor {
 
 
     ///////////////////////////////////////////////////////////////////////
-    ////////////////    Defence and Detection methods:    /////////////////
-        
-    ArrayList<Animal> checkForAnimal() {
-        // check if there is an animal nearby
-        Set<Location> visible_tiles = world.getSurroundingTiles(this.getLocation(), vision_range);
-        ArrayList<Animal> animal_list = new ArrayList<>();
-        for (Location l : visible_tiles) {
-            if (world.getTile(l) instanceof Animal && world.getTile(l) != this) {
-                animal_list.add( (Animal) world.getTile(l) );
-            }
-        }
-        return animal_list;
-    }
+    ////////////////    Defence and Attack methods:    /////////////////
 
-    Animal getNearestAnimal() {
-        ArrayList<Animal> animal_list = checkForAnimal();
-        int shortest_dist = Integer.MAX_VALUE;
-        Animal nearest_animal = null;
-        for (Animal a : animal_list) {
-            int dist = Help.getDistance(this.getLocation(), a.getLocation());
-            if (dist < shortest_dist) {
-                shortest_dist = dist;
-                nearest_animal = a;
-            }
-        }
-        return nearest_animal;
-    }
-
-    ArrayList<Animal> checkForCarnivore() {
-        // check if there is a carnivore nearby
-        Set<Location> visible_tiles = world.getSurroundingTiles(this.getLocation(), vision_range);
-        ArrayList<Animal> carnivore_list = new ArrayList<>();
-        for (Location l : visible_tiles) {
-            if (Help.doesInterfacesInclude(world.getTile(l), "Carnivore")) {
-                carnivore_list.add( (Animal) world.getTile(l) );
-            }
-        }
-        return carnivore_list;
-    }
-
-    Animal getNearestCarnivore() {
-        ArrayList<Animal> carnivore_list = checkForCarnivore();
-        int shortest_dist = Integer.MAX_VALUE;
-        Animal nearest_carnivore = null;
-        for (Animal a : carnivore_list) {
-            int dist = Help.getDistance(this.getLocation(), a.getLocation());
-            if (dist < shortest_dist) {
-                shortest_dist = dist;
-                nearest_carnivore = a;
-            }
-        }
-        return nearest_carnivore;
-    }
     
-    //Arrays.toString(world.getTile(l).getClass().getInterfaces()).contains("NonBlocking"))
     // Generates an escape route for the animal
     void escape(ArrayList<Animal> threat_list) {
-        //Find all possible escape routes
-        Set<Location> reachable_tiles = world.getSurroundingTiles(this.getLocation(), move_range);
-        ArrayList<Location> escape_routes = new ArrayList<>();
-        for (Location l : reachable_tiles) {
-            if (world.getTile(l) == null || Help.doesInterfacesInclude(world.getTile(l), "NonBlocking")) {
-                escape_routes.add(l);
-            }
-        }
+        ArrayList<Location> escape_routes = getEmptyTilesWithinRange(move_range);
+
         //Dertermine the escape route with the highest minimal distance to all threats
         int max_dist = Integer.MIN_VALUE;
         Location best_route = escape_routes.get(r.nextInt(escape_routes.size()));
@@ -429,7 +293,6 @@ public abstract class Animal implements Actor {
                 best_route = route;
             }
         }
-
         //Move to the escape route
         move(best_route);
     }
@@ -438,62 +301,20 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Food methods:            /////////////////
 
-    Eatable findNearestEatable() {
-        //Check if it stands on something it can eat
-        try {
-            Object tile = world.getNonBlocking(this.getLocation());
-            if (isPartOfDiet(tile)) {
-                return (Eatable) tile;
-            }
-        } catch (IllegalArgumentException iae) {
-            //do nothing
-        }
-        //Checks for all surrounding Eatable objects
-        Set<Location> neighbours = world.getSurroundingTiles(vision_range);
-        ArrayList<Eatable> food_list = new ArrayList<>();
-        for (Location l : neighbours) {
-            Object tile = world.getTile(l);
-            if (isPartOfDiet(tile)) {
-                food_list.add( (Eatable) world.getTile(l));
-            } 
-        } 
-        //Find the nearest eatable
-        Eatable nearestEatable = null;
-        int closestLocation = Integer.MAX_VALUE;
-        for(Eatable e : food_list) {
-            Location foodLoc = world.getLocation(e);
-            Location animalLoc = this.getLocation();
-            int distance = Help.getDistance(foodLoc, animalLoc);
-            if(distance < closestLocation) {
-                nearestEatable = e;
-                closestLocation = distance;
-            }
-        }
-        return nearestEatable;
-    }
-    
-     void moveToFood() {
-        Eatable food = findNearestEatable();
-        if (food == null) {
-            moveRandom();
-            return;
-        }
-        Location food_loc = world.getLocation(food);
-        if (Help.isSameLocations(food_loc, this.getLocation())) {
-            eat(food);
-            return;
-        }
-        Location move_loc = shortestRoute(food_loc);
-        if (Help.isSameLocations(food_loc, move_loc)) {
-            eat(food);
-            world.move(this, move_loc);
-        } else {
-            move(move_loc);
-        }
-    }
-
     void eat(Eatable food) {
         increaseEnergy(food.consumed());
+    }
+
+    boolean searchForFoodWthin(ArrayList<Location> area) {
+        ArrayList<Object> food_list = getObjectsInDiet(area);
+        if (!(food_list.isEmpty())) {
+            Eatable food = (Eatable) getNearestObject(food_list);
+            if (moveTo(world.getLocation(food)) == 0) { // moveTo() moves the animal towards the final location and returns the distance to this final location
+                eat(food);
+            }
+            return true;
+        }
+        return false;
     }
 
 
@@ -501,26 +322,17 @@ public abstract class Animal implements Actor {
     ////////////////             Home methods:            /////////////////
     
     void moveToHome() {
-        if (home == null) {
+        if (home == null) { // We also check for this in rabbit, no?
             //50 % chance to create a home or 50% to occupy one - NOT IMPLEMENTED YET
             createHome();
             return;
         }
-        Location home_loc = world.getLocation(home);
-        if (Help.isSameLocations(home_loc, this.getLocation())) {
+        if (moveTo(world.getLocation(home)) == 0) { // We somehow get here even though home is null
             sleep();
-            return;
-        }
-        Location move_loc = shortestRoute(home_loc);
-        if (Help.isSameLocations(home_loc, move_loc)) {
-            world.move(this, move_loc);
-            sleep();
-        } else {
-            move(move_loc);
         }
     }
 
-    public void createHome() {
+    public void createHome() { 
         Location loc = this.getLocation();
         if(!world.containsNonBlocking(loc) && home == null) {
             home = new Burrow(world, this);
@@ -551,6 +363,45 @@ public abstract class Animal implements Actor {
 
 
     ///////////////////////////////////////////////////////////////////////
+    ////////////////             Set methods:             /////////////////
+
+    void increaseEnergy(int energy) {
+        int potential_energy = current_energy + energy;
+        if (potential_energy > max_energy) {
+            current_energy = max_energy;
+        } else {
+            current_energy = potential_energy;
+        }
+    }
+
+    void decreaseEnergy(int energy) {
+        int potential_energy = current_energy - energy;
+        if (potential_energy < 0) {
+            current_energy = 0;
+        } else {
+            current_energy = potential_energy;
+        }
+    }
+
+    void increaseHp(int amount) {
+        int potential_hp = current_hp + amount;
+        if (potential_hp > max_hp) {
+            current_hp = max_hp;
+        } else {
+            current_hp = potential_hp;
+        }
+    }
+
+    void decreaseHp(int amount) {
+        if (current_hp - amount <= 0) {
+            die();
+        } else {
+            current_hp -= amount;
+        }
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////
     ////////////////             Get methods:             /////////////////
 
     int getHp() {
@@ -573,10 +424,13 @@ public abstract class Animal implements Actor {
         return age >= maturity_age;
     }
 
+    boolean getHasReproducedToday() {
+        return has_reproduced_today;
+    }
+
     Location getLocation() {
         return world.getLocation(this);
     }
-
 
     double getEnergyPercentage() {
         return (double) current_energy / max_energy;

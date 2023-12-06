@@ -1,8 +1,8 @@
 package Actors;
 
+import HelperMethods.Help;
 import java.util.ArrayList;
 import java.util.Set;
-
 import java.awt.Color;
 
 import itumulator.executable.DisplayInformation;
@@ -46,24 +46,23 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
             createHome();
         }
         if (!is_sleeping) {
-            moveToHome();
+            moveToHome(); // Hvis det skal sættes sådan her op, så skal createHome() garantere at skabe et home. Ellers får vi NullPointerException
         }
         return; // stop further execution if it's night
     }
 
     private void dayTimeBehaviour() {
         wakeUp();
-        ArrayList<Animal> threats = checkForCarnivore();
-        if(threats.isEmpty()) {
-            if ( (double) current_energy/max_energy < 0.5) {
-                //System.out.println("energy lvl: " + (double) current_energy/max_energy + "looking for food");
-                moveToFood();
-            } else {
-                moveRandom();
-            }
-        } else {
+        ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
+        ArrayList<Animal> threats = Help.castArrayList(getObjectsWithInterface("Carnivore", visible_tiles));
+        if (!threats.isEmpty()) {
             escape(threats);
+            return;
         }
+        if (getEnergyPercentage() < 0.5) {
+            if (searchForFoodWthin(visible_tiles)) {return;}
+        }
+        moveRandom();
         reproduce();
     }
 
@@ -73,7 +72,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
             return new DisplayInformation(Color.DARK_GRAY, "ghost");
         }
         String image;
-        if (age > maturity_age) {
+        if (getIsMature()) {
             image = is_sleeping ? "rabbit-sleeping" : "rabbit-large";
         } else {
             image = is_sleeping ? "rabbit-small-sleeping" : "rabbit-small";

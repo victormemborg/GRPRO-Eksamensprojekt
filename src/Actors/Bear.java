@@ -25,7 +25,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         super(world);
         super.max_hp = 800;
         super.current_hp = max_hp;
-        super.max_energy = 300; // test. Should be 800
+        super.max_energy = 300;
         super.current_energy = max_energy;
         super.maturity_age = 4;
         super.damage = 100;
@@ -38,7 +38,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         afraid_time = 0;
         mad_at = null;
         mad_time = 0;
-        baby = null;
+        baby = null; //reproduction needs to be overwritten
 
         counter = 0; // test
 
@@ -63,15 +63,17 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         /////////////////////////////////////////////
 
         super.act(w);
-        System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
-        //System.out.println("afraid of: " + afraid_of + "           dadadadadadadadadadadadadadadadadadad");
-        //System.out.println("mad at: " + mad_at + "           efefefefefefefefefefefefefefefef");
+        if (world.isDay()) {
+            is_sleeping = false; // testing purposes
+            dayTimeBehaviour();
+        } else {
+            nightTimeBehaviour();
+        }
+    }
 
-        // Sleep if night
-/*         if (world.isNight()) {
-            sleep();
-            return;
-        } */
+
+    private void dayTimeBehaviour() {
+        //wakeUp()
 
         // Check if the "afraid_of-animal" is nearby
         if (checkForAfraidOfAnimal()) { return; }
@@ -96,13 +98,20 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
             if (searchForFoodWthin(visible_tiles)) { return; }
 
             ArrayList<Object> target_list = getObjectsOfClass("Animal", visible_tiles);
-            System.out.println("Searching for prey withing vision range. Found: "+ target_list);
             if (approachAndAttackNearest(target_list)) { return; }
         }
-        System.out.println("Moving random");
         moveRandom();
         reproduce();
     }
+
+
+    private void nightTimeBehaviour() {
+        checkForAfraidOfAnimal();
+        checkForMadAtAnimal();
+        is_sleeping = true; // testing purposes
+        //Go towards territory and sleep
+    }
+
 
     boolean checkForAfraidOfAnimal() { // Kan nok samles med checkForMadAtAnimal vedhjælp af reflection, men ved ikke hvordan
         try {
@@ -117,12 +126,10 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
             afraid_time = 0;
             return false;
         }
-        System.out.println(Help.getDistance(this.getLocation(), afraid_of.getLocation()));
         if (Help.getDistance(this.getLocation(), afraid_of.getLocation()) <= vision_range) { // Magic number
             ArrayList<Animal> threat = new ArrayList<>();
             threat.add(afraid_of);
             escape(threat);
-            System.out.println("Escaping");
             return true;
         }
         return false;
@@ -150,27 +157,12 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         return false;
     }
 
-    boolean searchForFoodWthin(ArrayList<Location> area) { // Maybe move to Animal.java
-        ArrayList<Object> food_list = getObjectsInDiet(area);
-        System.out.println("Searching for food within " + area.size() + " tiles. Found: "+ food_list);
-        if (!(food_list.isEmpty())) {
-            Eatable food = (Eatable) getNearestObject(food_list);
-            if (moveTo(world.getLocation(food)) == 0) { // moveTo() moves the animal towards the final location and returns the distance to this final location
-                System.out.println("Eating: " + food);
-                eat(food);
-            }
-            return true;
-        }
-        return false;
-    }
-
     boolean approachAndAttackNearest(ArrayList<Object> target_list) { // Maybe move to Animal.java
         if (target_list.isEmpty()) {
             return false;
         }
         Animal target = (Animal) getNearestObject(target_list);
         if (moveTo(target.getLocation()) == 1) {
-            System.out.println("Attacking: " + target);
             attack(target);
         }
         return true;
@@ -196,10 +188,6 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
             mad_time = 0;
         }
     }
-
-/*     void sleep() {
-
-    } */
 
     @Override
     public DisplayInformation getInformation() {

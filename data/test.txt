@@ -1,5 +1,4 @@
-6
+10
 rabbit 4
 burrow 2
-grass 5-10
 berry 3
