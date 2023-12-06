@@ -4,8 +4,6 @@ import HelperMethods.Help;
 import java.util.ArrayList;
 import java.util.Set;
 import java.awt.Color;
-
-import HelperMethods.Help;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.*;

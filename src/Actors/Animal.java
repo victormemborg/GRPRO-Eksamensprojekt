@@ -72,6 +72,7 @@ public abstract class Animal implements Actor {
         if (world.getCurrentTime() == 0) {
             has_reproduced_today = false;
             age++;
+            changeMaxEnergy();
         }
         passiveHpRegen();
         //Must be extended by subclass here....    
@@ -101,7 +102,7 @@ public abstract class Animal implements Actor {
         decreaseEnergy(heal_amount / 2);     // Another magic number
     }
 
-    void die() {
+    public void die() {
         Location l = this.getLocation();
         if (!dead) {
             dead = true;
@@ -132,6 +133,10 @@ public abstract class Animal implements Actor {
             world.move(this, loc);
             decreaseEnergy(energy_loss_move);
         }
+    }
+
+    public void changeMaxEnergy() {
+        this.max_energy = max_energy - age * 2; 
     }
 
     //Moves the Animal to the empty tile closest to its target. Returns the distance from the new location to the target
@@ -319,7 +324,7 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Food methods:            /////////////////
 
-    void eat(Eatable food) {
+    public void eat(Eatable food) {
         increaseEnergy(food.consumed());
     }
 
@@ -448,7 +453,7 @@ public abstract class Animal implements Actor {
         return current_hp;
     }
 
-    int getEnergy() {
+    public int getEnergy() {
         return current_energy;
     }
 
@@ -478,5 +483,17 @@ public abstract class Animal implements Actor {
   
     public int getVisionRange() {
         return vision_range;
+    }
+
+    public int getMaxEnergy() {
+        return max_energy;
+    }
+
+    public void setEnergy(int energy) {
+        this.current_energy = energy;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 }

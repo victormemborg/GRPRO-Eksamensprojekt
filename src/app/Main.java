@@ -1,3 +1,5 @@
+package app;
+
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,7 +18,7 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/test.txt", 800, 100);
+            Program p = createProgramFromFile("data/Unittest/week3_carcass.txt", 800, 100);
             p.show();
             p.run();
 
@@ -34,7 +36,7 @@ public class Main {
      Returns an instances of Program with the specifications given by
      its arguments and the specified txt-file
     */
-    private static Program createProgramFromFile(String path, int display_size, int delay) throws FileNotFoundException {
+    public static Program createProgramFromFile(String path, int display_size, int delay) throws FileNotFoundException {
         Scanner scan = new Scanner(new File(path));
         Program p = new Program(Integer.parseInt(scan.nextLine()), display_size, delay);
 
