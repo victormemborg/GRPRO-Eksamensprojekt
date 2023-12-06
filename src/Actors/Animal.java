@@ -71,6 +71,7 @@ public abstract class Animal implements Actor {
         if (world.getCurrentTime() == 0) {
             has_reproduced_today = false;
             age++;
+            changeMaxEnergy();
         }
         passiveHpRegen();
         //Must be extended by subclass here....    
@@ -458,6 +459,10 @@ public abstract class Animal implements Actor {
         }
     }
 
+    public void changeMaxEnergy() {
+        this.max_energy = max_energy - age * 2; 
+    }
+
 
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Get methods:             /////////////////
@@ -466,35 +471,47 @@ public abstract class Animal implements Actor {
         return current_hp;
     }
 
-    int getEnergy() {
+    public int getEnergy() {
         return current_energy;
     }
 
-    int getDamage() {
+    public int getDamage() {
         return damage;
     }
 
-    int getAge() {
+    public int getAge() {
         return age;
     }
 
-    boolean getIsMature() {
+    public boolean getIsMature() {
         return age >= maturity_age;
     }
 
-    boolean getHasReproducedToday() {
+    public boolean getHasReproducedToday() {
         return has_reproduced_today;
     }
 
-    Location getLocation() {
+    public Location getLocation() {
         return world.getLocation(this);
     }
 
-    double getEnergyPercentage() {
+    public double getEnergyPercentage() {
         return (double) current_energy / max_energy;
     }
   
     public int getVisionRange() {
         return vision_range;
+    }
+
+    public int getMaxEnergy() {
+        return max_energy;
+    }
+
+    public void setEnergy(int energy) {
+        this.current_energy = energy;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 }
