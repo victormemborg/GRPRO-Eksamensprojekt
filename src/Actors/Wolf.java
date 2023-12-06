@@ -39,7 +39,7 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         super.attacked(dmg, agressor); //Decrases hp
         //alertPack(agressor);
         if (age < maturity_age || this.getHp() < agressor.getHp()) { //All social animals must override .getHp() to return the combined health of the pack
-            escape(checkForCarnivore());
+            //escape(checkForCarnivore());
         } else {
             attack(agressor);
         }
@@ -60,7 +60,7 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
 
     public void addtoPack(Wolf new_member) {
         for (Wolf member : pack_members) {
-            member.add(new_member);
+            //member.add(new_member);
         }
     }
 
