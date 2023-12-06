@@ -353,15 +353,24 @@ public abstract class Animal implements Actor {
     }
 
     public void wakeUp() {
-        if(world.getCurrentTime() == 0 && is_sleeping) { //check first tick to move to an empty surrounding location near its home
-            world.setCurrentLocation(Help.getRandomNearbyEmptyTile(world, home.getLocation(), 3)); // radius where it can spawn around its home
-            world.setTile(world.getCurrentLocation(), this);
-            is_sleeping = false;
+        try {
+            if(world.getCurrentTime() == 0 && is_sleeping) { //check first tick to move to an empty surrounding location near its home
+                world.setCurrentLocation(Help.getRandomNearbyEmptyTile(world, home.getLocation(), 1)); // radius where it can spawn around its home
+                world.setTile(world.getCurrentLocation(), this);
+                is_sleeping = false;
+            }
+        } catch (NullPointerException npe) {
+            System.out.println("No empty tile found near home.. trying again next tick");
         }
     }
 
     public Home getHome() {
         return home;
+    }
+
+    public void setHome(Home home) {
+        this.home = home;
+        home.addOccupant(this);
     }
 
 
