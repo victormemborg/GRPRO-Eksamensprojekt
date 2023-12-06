@@ -241,7 +241,7 @@ public abstract class Animal implements Actor {
     ///////////////          Reproduction methods:          ///////////////
 
     public void reproduce() {
-        if (!getIsMature()) {
+        if (!getIsMature() || has_reproduced_today) {
             return;
         }
         ArrayList<Animal> partner_list = Help.castArrayList(getObjectsOfClass(this.getClass().getSimpleName(), getSurroundingTilesAsList(1)));
@@ -334,10 +334,13 @@ public abstract class Animal implements Actor {
 
     public void createHome() { 
         Location loc = this.getLocation();
-        if(!world.containsNonBlocking(loc) && home == null) {
-            home = new Burrow(world, this);
-            world.setTile(loc, home);
-        }
+        try {
+            if(!(world.getNonBlocking(loc) instanceof Home)) {
+                world.delete(world.getNonBlocking(loc));
+            }
+        } catch (IllegalArgumentException ignore) {} //if there is no nonblocking object at the location, just set the home
+        home = new Burrow(world, this);
+        world.setTile(loc, home);    
     }
 
     //maybe, maybe not an individual method for the subclasses?

@@ -42,9 +42,9 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     }
 
     private void nightTimeBehaviour() {
-        if (getHome() == null) {
+/*         if (getHome() == null) {
             createHome();
-        }
+        } */
         if (!is_sleeping) {
             moveToHome(); // Hvis det skal sættes sådan her op, så skal createHome() garantere at skabe et home. Ellers får vi NullPointerException
         }
