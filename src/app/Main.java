@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import HelperMethods.Help;
-import Actors.*;
+import Actors.Wolf;
 
 import itumulator.executable.Program;
 import itumulator.world.Location;

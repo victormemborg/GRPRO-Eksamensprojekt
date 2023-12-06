@@ -33,6 +33,23 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         this.enemies = new ArrayList<>();
     }
 
+    public Wolf(World world) {
+        super(world);
+        super.max_hp = 100;
+        super.current_hp = max_hp;
+        super.max_energy = 100;
+        super.current_energy = max_energy;
+        super.damage = 50;
+        super.maturity_age = 3;
+        super.vision_range = 2;
+        super.move_range = 2;
+        super.diet = Set.of("Carcass");
+        super.home = null;
+
+        //this.pack_members = pack_members;
+        this.enemies = new ArrayList<>();
+    }
+
     public void act(World w) {
         if (dead) {
             die();
@@ -95,7 +112,7 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
     }
 
     @Override
-    void die() {
+    public void die() {
         notifyDeath();
         super.die();
     }

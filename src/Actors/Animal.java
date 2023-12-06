@@ -101,7 +101,7 @@ public abstract class Animal implements Actor {
         decreaseEnergy(heal_amount / 2);     // Another magic number
     }
 
-    void die() {
+    public void die() {
         Location l = this.getLocation();
         if (!dead) {
             dead = true;
@@ -339,7 +339,7 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Food methods:            /////////////////
 
-    void eat(Eatable food) {
+    public void eat(Eatable food) {
         increaseEnergy(food.consumed());
     }
 

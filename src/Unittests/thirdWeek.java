@@ -1,13 +1,10 @@
 package Unittests;
 
-import static org.junit.Assert.assertTrue;
 import java.io.FileNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.*;
 
-import Actors.Burrow;
 import Actors.Carcass;
-import Actors.Grass;
 import Actors.Rabbit;
 import itumulator.executable.Program;
 import itumulator.world.Location;
