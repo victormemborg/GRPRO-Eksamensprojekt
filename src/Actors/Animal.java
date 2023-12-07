@@ -297,13 +297,15 @@ public abstract class Animal implements Actor {
 
 
     ///////////////////////////////////////////////////////////////////////
-    ////////////////    Defence and Attack methods:    /////////////////
+    ////////////         Defence and Attack methods:         //////////////
 
     
     // Generates an escape route for the animal
-    void escape(ArrayList<Animal> threat_list) {
+    boolean escape(ArrayList<Animal> threat_list) {
+        if (threat_list.isEmpty()) {
+            return false;
+        }
         ArrayList<Location> escape_routes = getEmptyTilesWithinRange(move_range);
-
         //Dertermine the escape route with the highest minimal distance to all threats
         int max_dist = Integer.MIN_VALUE;
         Location best_route = escape_routes.get(r.nextInt(escape_routes.size()));
@@ -322,6 +324,7 @@ public abstract class Animal implements Actor {
         }
         //Move to the escape route
         move(best_route);
+        return true;
     }
 
     boolean approachAndAttackNearest(ArrayList<Object> target_list) { // Maybe move to Animal.java
@@ -362,29 +365,29 @@ public abstract class Animal implements Actor {
     void moveToHome() {
         if (home == null) { // We also check for this in rabbit, no?
             //50 % chance to create a home or 50% to occupy one - NOT IMPLEMENTED YET
-            createHome();
+            setHome(createHome());
             return;
         }
-        if (moveTo(home.getLocation()) == 0) { // We somehow get here even though home is null
+        if (moveTo(home.getLocation()) == 0) {
             sleep();
         }
     }
 
-    public void createHome() { 
+    public Home createHome() { 
         Location loc = this.getLocation();
         try {
             if ( !(world.getNonBlocking(loc) instanceof Home) ) {
                 world.delete(world.getNonBlocking(loc));
             }
         } catch (IllegalArgumentException ignore) { 
-            //if there is no nonblocking object at the location, just set the home
+            //if there is no nonblocking object at the location, do nothing here
         }
         try {
             Home new_home = new Burrow(world, this);
             world.setTile(loc, new_home);
-            home = new_home;
-        } catch (IllegalArgumentException ignore2) {
-            // do nothing
+            return new_home;
+        } catch (IllegalArgumentException iae) {
+            return null;
         }
     }
 
@@ -417,7 +420,9 @@ public abstract class Animal implements Actor {
 
     public void setHome(Home home) {
         this.home = home;
-        home.addOccupant(this);
+        if (home != null) {
+            home.addOccupant(this);
+        }
     }
 
 
