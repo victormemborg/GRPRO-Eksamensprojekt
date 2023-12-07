@@ -14,8 +14,6 @@ import itumulator.world.*;
 
 public class Wolf extends Animal implements DynamicDisplayInformationProvider, Carnivore {
     private ArrayList<Wolf> pack_members;
-    private ArrayList<Animal> mad_at;
-    private ArrayList<Animal> afraid_of;
     
     public Wolf(World world, ArrayList<Wolf> pack_members) {
         super(world);
@@ -29,13 +27,12 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         super.move_range = 2;
         super.diet = Set.of("Carcass");
         super.home = null;
-
+        super.mad_at = new ArrayList<>();
+        super.afraid_of = new ArrayList<>();
         this.pack_members = pack_members;
-        this.mad_at = new ArrayList<>();
-        this.afraid_of = new ArrayList<>();
     }
 
-    public Wolf(World world) { // For creating a Wolf without a pack. Useful for testing
+    public Wolf(World world) { // For creating a Wolf without a pack
         super(world);
         super.max_hp = 100;
         super.current_hp = max_hp;
@@ -47,10 +44,9 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         super.move_range = 2;
         super.diet = Set.of("Carcass");
         super.home = null;
-
-        //this.pack_members = pack_members;
-        this.mad_at = new ArrayList<>();
-        this.afraid_of = new ArrayList<>();
+        super.mad_at = new ArrayList<>();
+        super.afraid_of = new ArrayList<>();
+        this.pack_members = new ArrayList<>(Arrays.asList(this));
     }
 
     public void act(World w) {
@@ -70,8 +66,10 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         if (!wakeUp()) { return; }
         // Check for afraid_of-animals within vision range
         if (checkForAfraidOfAnimals(getSurroundingTilesAsList(vision_range))) { return; }
+        
+        ArrayList<Location> visible_tiles = getAllLocsVisibleToPack(); // Pack shares vision for the rest of dayTimeBehaviour()
+
         // Check for mad_at-animals within packs combined vision range
-        ArrayList<Location> visible_tiles = getAllLocsVisibleToPack(); // Pack shares vision
         if (checkForMadAtAnimals(visible_tiles)) { return; }
         // If hungry, search for food
         if (getEnergyPercentage() < 0.75) {
@@ -94,6 +92,8 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
     }
 
     private void nightTimeBehaviour() {
+        // // Check for afraid_of-animals within vision range
+        if (checkForAfraidOfAnimals(getSurroundingTilesAsList(vision_range))) { return; }
         // Hunts alone at night if too hungry
         if (getEnergyPercentage() < 0.3) {
             ArrayList<Object> target_list = getObjectsOfClass("Animal", getSurroundingTilesAsList(vision_range));
@@ -102,31 +102,6 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         }
         // Else go home and sleep
         moveToHome();
-    }
-
-    // Escapes any afraid_of-animal within given area
-    private boolean checkForAfraidOfAnimals(ArrayList<Location> area) {
-        ArrayList<Object> visible_animals = getObjectsOfClass("Animal", area);
-        ArrayList<Object> visible_afraid_of = new ArrayList<>();
-        for (Object a : visible_animals) {
-            if (afraid_of.contains(a)) {
-                visible_afraid_of.add(a);
-            }
-        }
-        return escape(Help.castArrayList(visible_afraid_of));
-    }
-
-
-    // Hunts down any mad_at-animal within given area
-    private boolean checkForMadAtAnimals(ArrayList<Location> area) { 
-        ArrayList<Object> visible_animals = getObjectsOfClass("Animal", area);
-        ArrayList<Object> visible_mad_at = new ArrayList<>();
-        for (Object a : visible_animals) {
-            if (mad_at.contains(a)) {
-                visible_mad_at.add(a);
-            }
-        }
-        return approachAndAttackNearest(visible_mad_at);
     }
 
     private boolean moveToNearestMember() {
@@ -152,15 +127,16 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         super.die();
     }
 
-    @Override // Make it so 
+    @Override // Make it so the pack is afraid of, or mad at, the agressor depending on their relative hp
     public void attacked(int dmg, Animal agressor) {
         super.attacked(dmg, agressor); //Decrases hp
-        if (!getIsMature() || this.getHp() < agressor.getHp()) { //All social animals must override .getHp() to return the combined health of the pack
-            ArrayList<Animal> threat_list = new ArrayList<>(Arrays.asList(agressor));
-            escape(threat_list);
+        if (this.getHp() < agressor.getHp()) {
+            makePackAfraidOf(agressor);
+            ArrayList<Object> threat = new ArrayList<>(Arrays.asList(agressor));
+            escape(threat);
         } else {
+            // Do not attack back instantly! Must wait until next act(). Otherwise we might get an infinite loop of attacking.
             makePackMadAt(agressor);
-            attack(agressor);
         }
     }
 
@@ -224,14 +200,24 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         }
     }
 
-    private void notifyDeath() {
+    private void makePackAfraidOf(Animal animal) {
         for (Wolf member : pack_members) {
-            member.removeMember(this);
+            member.makeAfraidOf(animal);
         }
     }
 
     public void makeMadAt(Animal animal) {
         mad_at.add(animal);
+    }
+
+    public void makeAfraidOf(Animal animal) {
+        afraid_of.add(animal);
+    }
+
+    private void notifyDeath() {
+        for (Wolf member : pack_members) {
+            member.removeMember(this);
+        }
     }
 
     public void removeMember(Wolf member) {

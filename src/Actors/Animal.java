@@ -26,6 +26,9 @@ public abstract class Animal implements Actor {
     boolean has_reproduced_today;     // A boolean describing whether the animal has alredy reproduced today (resets every 10 ingame ticks)
     boolean is_sleeping;              // A boolean describing whether the animal is sleeping
     boolean dead;                     // Waiting frame for proper sync between carcass and animal
+    ArrayList<Animal> mad_at;         // List of animals the animal would wanna attack
+    ArrayList<Animal> afraid_of;      // List of animals the animal would want to flee from
+
 
     // Initialized by a subclass:
     int max_hp;                       // The max HP for the animal
@@ -60,6 +63,8 @@ public abstract class Animal implements Actor {
         this.age = 0;
         this.has_reproduced_today = false;
         this.dead = false;
+        this.mad_at = new ArrayList<>();
+        this.afraid_of = new ArrayList<>();
     }
 
 
@@ -246,6 +251,9 @@ public abstract class Animal implements Actor {
      * Not quite happy with this method, but it works for now - please take a look at it
      */
     void findSurroundingBurrows() {
+        if (home != null) {
+            return;
+        }
         ArrayList<Burrow> burrow_list = Help.castArrayList(getObjectsOfClass("Burrow", getSurroundingTilesAsList(vision_range))); // get all burrows within vision range
         for (Burrow burrow : burrow_list) {
             if (!burrow.isBigHole() && !burrow.isFull() && this instanceof Rabbit) {
@@ -299,9 +307,38 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     ////////////         Defence and Attack methods:         //////////////
 
-    
+    // Escapes any afraid_of-animal within given area. Can probably be combined with checkForMadAtAnimals() via reflection, but cant be bothered
+    boolean checkForAfraidOfAnimals(ArrayList<Location> area) {
+        // Updates afraid_of incase an element no longer exists in the world (has died)
+        Help.removeNonExistent(world, Help.castArrayList(afraid_of));
+        // Checks for visible afraid_of-animals within the given area
+        ArrayList<Object> visible_animals = getObjectsOfClass("Animal", area);
+        ArrayList<Object> visible_afraid_of = new ArrayList<>();
+        for (Object a : visible_animals) {
+            if (afraid_of.contains(a)) {
+                visible_afraid_of.add(a);
+            }
+        }
+        return escape(Help.castArrayList(visible_afraid_of));
+    }
+
+    // Hunts down any mad_at-animal within given area. Can probably be combined with checkForAfraidOfAnimals via reflection, but cant be bothered
+    boolean checkForMadAtAnimals(ArrayList<Location> area) { 
+        // Updates mad_at incase an element no longer exists in the world (has died)
+        Help.removeNonExistent(world, Help.castArrayList(mad_at));
+        // Checks for visible mad_at-animals within the given area
+        ArrayList<Object> visible_animals = getObjectsOfClass("Animal", area);
+        ArrayList<Object> visible_mad_at = new ArrayList<>();
+        for (Object a : visible_animals) {
+            if (mad_at.contains(a)) {
+                visible_mad_at.add(a);
+            }
+        }
+        return approachAndAttackNearest(visible_mad_at);
+    }
+
     // Generates an escape route for the animal
-    boolean escape(ArrayList<Animal> threat_list) {
+    boolean escape(ArrayList<Object> threat_list) {
         if (threat_list.isEmpty()) {
             return false;
         }
@@ -311,8 +348,8 @@ public abstract class Animal implements Actor {
         Location best_route = escape_routes.get(r.nextInt(escape_routes.size()));
         for (Location route : escape_routes) {
             int min_dist = Integer.MAX_VALUE;
-            for (Animal threat : threat_list) {
-                int dist = Help.getDistance(route, threat.getLocation());
+            for (Object threat : threat_list) {
+                int dist = Help.getDistance(route, world.getLocation(threat));
                 if (dist < min_dist) {
                     min_dist = dist;
                 }

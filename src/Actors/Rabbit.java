@@ -1,6 +1,5 @@
 package Actors;
 
-import HelperMethods.Help;
 import java.util.ArrayList;
 import java.util.Set;
 import java.awt.Color;
@@ -23,6 +22,8 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         super.move_range = 2;
         super.vision_range = 2;
         super.home = null;
+        super.afraid_of = null;
+        super.mad_at = null;
     }
 
     // Needs all rabbit behaviour
@@ -41,9 +42,6 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     }
 
     private void nightTimeBehaviour() {
-/*         if (getHome() == null) {
-            createHome();
-        } */
         if (!is_sleeping) {
             moveToHome(); // Hvis det skal sættes sådan her op, så skal createHome() garantere at skabe et home. Ellers får vi NullPointerException
         }
@@ -56,15 +54,16 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     private void dayTimeBehaviour() {
         if (!wakeUp()) { return; }
         ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
-        ArrayList<Animal> threats = Help.castArrayList(getObjectsWithInterface("Carnivore", visible_tiles));
-        if (!threats.isEmpty()) {
-            escape(threats);
-            return;
-        }
+        // Escape all visible threats
+        ArrayList<Object> threats = getObjectsWithInterface("Carnivore", visible_tiles);
+        if (escape(threats)) { return; }
+        // Look for a home
         findSurroundingBurrows();
+        // If hungry search for food
         if (getEnergyPercentage() < 0.5) {
             if (searchForFoodWthin(visible_tiles)) {return;}
         }
+        // Move random and reproduce
         moveRandom();
         reproduce();
     }
