@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.awt.Color;
 
-import HelperMethods.Help;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.*;
@@ -13,7 +12,6 @@ import itumulator.world.*;
 public class Rabbit extends Animal implements DynamicDisplayInformationProvider {
     public Rabbit(World world) {
         super(world);
-
         super.max_hp = 100;
         super.current_hp = max_hp;
         super.max_energy = 100;
@@ -24,7 +22,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         super.req_energy_reproduction = 0.6;
         super.move_range = 2;
         super.vision_range = 2;
-
+        super.home = null;
     }
 
     // Needs all rabbit behaviour

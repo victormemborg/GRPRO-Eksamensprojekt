@@ -6,8 +6,10 @@ import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.executable.DisplayInformation;
 
 import java.awt.Color;
+import java.util.Random;
 
 public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlocking, Eatable {
+    Random r = new Random();
     private int energy;
     private int age;
     private World world;
@@ -15,6 +17,12 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     public Carcass(World world, int energy) {
         this.world = world;
         this.energy = energy;
+        this.age = 0;
+    }
+
+    public Carcass(World world) {
+        this.world = world;
+        this.energy = r.nextInt(100,200);
         this.age = 0;
     }
 

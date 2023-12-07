@@ -4,9 +4,7 @@ import itumulator.world.*;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Random;
-import java.util.Set;
 
 public class Burrow extends Home implements DynamicDisplayInformationProvider {
     private boolean big_hole;
