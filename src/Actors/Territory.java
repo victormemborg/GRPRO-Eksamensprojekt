@@ -15,7 +15,6 @@ public class Territory extends Home {
     }
 
     public void setTerritory(Animal animal){
-
         territorial_spot = world.getLocation(animal);
         territorial_area = world.getSurroundingTiles(world.getLocation(animal),3);
 

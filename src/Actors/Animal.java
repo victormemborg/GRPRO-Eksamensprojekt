@@ -250,7 +250,7 @@ public abstract class Animal implements Actor {
      * Checks for surrounding burrows and sets home to the first burrow found.
      * Not quite happy with this method, but it works for now - please take a look at it
      */
-    void findSurroundingBurrows() {
+    void tryInhabitEmptyBurrow() {
         if (home != null) {
             return;
         }

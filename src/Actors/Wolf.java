@@ -71,6 +71,8 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
 
         // Check for mad_at-animals within packs combined vision range
         if (checkForMadAtAnimals(visible_tiles)) { return; }
+        // if it has no home, search for one
+        tryInhabitEmptyBurrow();
         // If hungry, search for food
         if (getEnergyPercentage() < 0.75) {
             if (searchForFoodWthin(visible_tiles)) { return; }

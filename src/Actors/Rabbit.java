@@ -48,7 +48,6 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         if (getHome() == null && !is_sleeping) {
             moveRandom();
         }
-        return;
     }
 
     private void dayTimeBehaviour() {
@@ -58,7 +57,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         ArrayList<Object> threats = getObjectsWithInterface("Carnivore", visible_tiles);
         if (escape(threats)) { return; }
         // Look for a home
-        findSurroundingBurrows();
+        tryInhabitEmptyBurrow();
         // If hungry search for food
         if (getEnergyPercentage() < 0.5) {
             if (searchForFoodWthin(visible_tiles)) {return;}
