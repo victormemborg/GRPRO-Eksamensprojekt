@@ -13,6 +13,8 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     private int energy;
     private int age;
     private World world;
+    private boolean isInfected = false;
+    private int fungiEnergy = 0;
 
     public Carcass(World world, int energy) {
         this.world = world;
@@ -32,15 +34,30 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     }
 
     private void decay() {
-        age++;
-        if (age > 40) { // magic number
+        //age determines whether or not the carcass randomly gets infected
+        if(!isInfected && r.nextFloat(0,1) < age / 100) {
+            isInfected = true;
+        } else if(isInfected) {
+            growFungi();
+        }
+    }
+
+    private void growFungi() {
+        if(energy - fungiEnergy >= 0) { //if the fungi energy is less than the energy of the carcass, add 10 to the fungi energy
+            fungiEnergy += 10;
+            energy -= 10;
+        } else {
+            Location carcassLocation = world.getLocation(this);
+            Fungi fungi = new Fungi(world, fungiEnergy);
             world.delete(this);
+            world.setTile(carcassLocation, fungi);
         }
     }
 
     @Override
     public void act(World world) {
         this.world = world;
+        age++;
         decay();
     }
 
@@ -51,5 +68,13 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
         } else {
             return new DisplayInformation(Color.red, "carcass-small");
         }
+    }
+
+    public boolean getIsInfected() {
+        return isInfected;
+    }
+
+    public void setInfected(boolean isInfected) {
+        this.isInfected = isInfected;
     }
 }
