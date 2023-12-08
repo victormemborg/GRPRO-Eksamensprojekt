@@ -6,11 +6,12 @@ import java.util.ArrayList;
 abstract public class Home implements NonBlocking {
     World world;
     ArrayList<Animal> occupants;
-    int max_occupants = 4;
+    int max_occupants;
 
     public Home(World world) {
         this.world = world;
-        occupants = new ArrayList<Animal>();
+        this.occupants = new ArrayList<Animal>();
+        this.max_occupants = 4;
     }
     
 

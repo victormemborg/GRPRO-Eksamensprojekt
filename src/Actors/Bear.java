@@ -14,9 +14,9 @@ import itumulator.world.Location;
 
 public class Bear extends Animal implements Carnivore, DynamicDisplayInformationProvider {
     Animal baby;
-    Territory home; // ?????????
+    Territory territory; // ?????????
 
-    public Bear(World world, Territory territory) {
+    public Bear(World world, Location territory_loc) {
         super(world);
         super.max_hp = 800;
         super.current_hp = max_hp;
@@ -28,6 +28,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         super.req_energy_reproduction = 0.6;
         super.move_range = 1;
         super.vision_range = 3;
+        this.territory = new Territory(world, territory_loc);
         this.home = territory;
         this.baby = null; //reproduction needs to be overwritten
     }
@@ -49,12 +50,15 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
     // Needs all Bear behaviour
     @Override
     public void act(World w) {
+        System.out.println(this + " isSleeping: " + is_sleeping);
+        System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
         if (dead) {
             die();
             return;
         }
         super.act(w);
         if (world.isDay()) {
+            is_sleeping = false;
             dayTimeBehaviour();
         } else {
             nightTimeBehaviour();
@@ -62,8 +66,6 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
     }
 
     private void dayTimeBehaviour() {
-        if (!wakeUp()) { return; }
-
         ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
 
         // Check if the "afraid_of-animal" is nearby
@@ -73,14 +75,14 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         if (checkForMadAtAnimals(visible_tiles)) { return; }
 
         // Check territory for intruders and attack them
-        ArrayList<Object> intruders = getObjectsWithInterface("Carnivore", home.getTerritory()); // test_home must be replaced with (ArrayList<Location>) home.getArea() once Territory.java has been made
+        ArrayList<Object> intruders = getObjectsWithInterface("Carnivore", territory.getArea());
         intruders.remove(this); // Removes itself from the list of intruders
         intruders.remove(baby); // Removes its baby (if it has one) from the list of intruders
         if (approachAndAttackNearest(intruders)) { return; }
 
         // If hungry, search for food within territory
         if (getEnergyPercentage() < 0.7 ) {
-            if (searchForFoodWthin(home.getTerritory())) { return; } // test_home must be replaced with (ArrayList<Location>) home.getArea() once Territory.java has been made
+            if (searchForFoodWthin(territory.getArea())) { return; }
         }
 
         // If even more hungry, first check for food within vision range, if there is none, then attack all animals within vision range
@@ -105,7 +107,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
 
     @Override
     void moveRandom() {
-        moveTo(Help.getRandomNearbyEmptyTile(world, new Location(2, 2), 2)); // new Location(2,2) must be replaced with home.getLocation() once Territory.java has been made
+        moveTo(Help.getRandomNearbyEmptyTile(world, home.getLocation(), territory.getRadius() + 1)); // Magic number
     }
 
     @Override
@@ -113,8 +115,6 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         super.attacked(dmg, agressor);
         if ( ((double) current_hp / agressor.getHp()) < 0.75) { //if the agressor has around 30-35 % more health than the bear
             afraid_of.add(agressor);
-            ArrayList<Object> threat = new ArrayList<>(Arrays.asList(agressor));
-            escape(threat);
         } else {
             // Do not attack back instantly! Must wait until next act(). Otherwise we might get an infinite loop of attacking.
             mad_at.add(agressor);

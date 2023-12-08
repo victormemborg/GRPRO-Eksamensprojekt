@@ -67,6 +67,12 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         reproduce();
     }
 
+    @Override // Make it so the Rabbit dissapears into the burrow
+    public void sleep() {
+        super.sleep();
+        world.remove(this);
+    }
+
     @Override
     public DisplayInformation getInformation() {
         if (dead) {

@@ -78,7 +78,7 @@ public abstract class Animal implements Actor {
             age++;
             changeMaxEnergy();
         }
-        passiveHpRegen();
+        if (!is_sleeping) { passiveHpRegen(); }
         //Must be extended by subclass here....    
     }
 
@@ -99,15 +99,16 @@ public abstract class Animal implements Actor {
     ////////////////           General methods:           /////////////////
 
     void passiveHpRegen() {
-        float energy_ratio = current_energy / max_energy;
-        int healing_factor = max_hp / 10;    // Magic number
-        int heal_amount = Math.round(healing_factor*energy_ratio);
-        increaseHp(heal_amount);
-        decreaseEnergy(heal_amount / 2);     // Another magic number
+        double energy_ratio = (double) current_energy / max_energy;
+        int healing_factor = max_hp / 20;        // Magic number
+        int heal_amount = (int) Math.round(healing_factor*energy_ratio);
+        int actual_increase = increaseHp(heal_amount);
+        decreaseEnergy(actual_increase / 2);     // Another magic number
     }
 
     public void die() {
         Location l = this.getLocation();
+        System.out.println(this + " dead is" + dead);
         if (!dead) {
             dead = true;
             return;
@@ -115,6 +116,7 @@ public abstract class Animal implements Actor {
         try {
             Object object = world.getNonBlocking(l);
             if (object instanceof Home) {
+                world.delete(this);
                 return;
             }
             world.delete(object);
@@ -137,9 +139,16 @@ public abstract class Animal implements Actor {
     }
 
     void move(Location loc) {
-        if (current_energy >= energy_loss_move && loc != null) {
+        if (loc == null) {
+            return;
+        }
+        // If the animal does not have enough energy to move, then substract energy_loss_move from its health instead
+        if (current_energy >= energy_loss_move) {
             world.move(this, loc);
             decreaseEnergy(energy_loss_move);
+        } else {
+            world.move(this, loc);
+            decreaseHp(energy_loss_move); // Has to be done last so we dont move a dead animal
         }
     }
 
@@ -402,15 +411,15 @@ public abstract class Animal implements Actor {
     void moveToHome() {
         if (home == null) { // We also check for this in rabbit, no?
             //50 % chance to create a home or 50% to occupy one - NOT IMPLEMENTED YET
-            setHome(createHome());
+            setHome(createBurrow()); // Only Wolf and Rabbit can have home == null true, so create burrow
             return;
         }
-        if (moveTo(home.getLocation()) == 0) {
+        if (moveTo(home.getLocation()) == 0 && !dead) { // Anoying buffer frame because of world.delete()
             sleep();
         }
     }
 
-    public Home createHome() { 
+    public Home createBurrow() { 
         Location loc = this.getLocation();
         try {
             if ( !(world.getNonBlocking(loc) instanceof Home) ) {
@@ -431,9 +440,8 @@ public abstract class Animal implements Actor {
     //maybe, maybe not an individual method for the subclasses?
     public void sleep() {
         is_sleeping = true;
-        world.remove(this);
-        while (current_energy < max_energy) {
-            current_energy += 5;
+        if (current_hp < max_hp) {
+            current_hp += 5;
         }
     }
 
@@ -484,13 +492,15 @@ public abstract class Animal implements Actor {
         }
     }
 
-    void increaseHp(int amount) {
+    int increaseHp(int amount) {
+        int start_hp = current_hp; // for returning the amount healed
         int potential_hp = current_hp + amount;
         if (potential_hp > max_hp) {
             current_hp = max_hp;
         } else {
             current_hp = potential_hp;
         }
+        return current_hp - start_hp;
     }
 
     void decreaseHp(int amount) {
