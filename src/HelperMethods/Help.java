@@ -109,4 +109,14 @@ public class Help {
         }
         return newlyCastedArrayList;
     }
+
+    public static void removeNonExistent(World world, ArrayList<Object> list) {
+        ArrayList<Object> temp = new ArrayList<>();
+        for (Object o : list) {
+            if (!world.contains(o)) {
+                temp.add(o);
+            }
+        }
+        list.removeAll(temp);
+    }
 }

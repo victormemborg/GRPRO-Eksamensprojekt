@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.*;
 
+import Actors.Wolf;
 import Actors.Bear;
 import Actors.Rabbit;
 import Actors.Berry;
@@ -16,13 +17,40 @@ import app.Main;
 public class secondWeek {
     
     //Opgave K2-1a
-
+    @Test
+    public void placeWolf() throws FileNotFoundException {
+        Program p = Main.createProgramFromFile("data/Unittest/week2_wolf.txt", 800, 100); // WOLF AMOUNT: 1, WORLD SIZE: 1x1 (by our txt file)
+        World world = p.getWorld();
+        Location loc = new Location(0, 0);
+        Assertions.assertTrue(world.getTile(loc) instanceof Wolf);
+    }
 
     //Opgave K2-1b
+    @Test
+    public void WolfCanDie() throws FileNotFoundException {
+        Program p = new Program(1, 800, 100); 
+        World world = p.getWorld();
+        Wolf wolf = new Wolf(world);
+        world.setTile(new Location(0,0), wolf);
+        wolf.setEnergy(0);
+        p.simulate();
+        Assertions.assertFalse(world.getTile(new Location(0,0)) instanceof Wolf);
+    }
 
 
     //Opgave K2-1c
-
+    @Test
+    public void WolfHunts() throws FileNotFoundException {
+        Program p = new Program(2, 800, 100); 
+        World world = p.getWorld();
+        Wolf wolf = new Wolf(world);
+        Rabbit rabbit = new Rabbit(world);
+        world.setTile(new Location(0,1), wolf);
+        world.setTile(new Location(0,0), rabbit);
+        wolf.setEnergy(60);
+        p.simulate();
+        Assertions.assertFalse(world.getTile(new Location(1,0)) instanceof Rabbit);
+    }
 
     //Opgave K2-2a
 
@@ -31,7 +59,19 @@ public class secondWeek {
 
 
     //Opgave K2-4a
-
+    @Test
+    public void RabbitFearsWolf(){
+        Program p = new Program(5, 800, 100);
+        World world = p.getWorld();
+        Rabbit rabbit = new Rabbit(world);
+        Wolf wolf = new Wolf(world);
+        Location loc_wolf = new Location(0, 0);
+        Location loc_rabbit = new Location(1,1);
+        world.setTile(loc_rabbit, rabbit);
+        world.setTile(loc_wolf, wolf);
+        p.simulate();
+        Assertions.assertFalse(world.getTile(loc_rabbit) instanceof Rabbit); // if the rabbit has run away, there should not be a rabbit anymore
+    }
 
     //Opgave K2-5a
     @Test
