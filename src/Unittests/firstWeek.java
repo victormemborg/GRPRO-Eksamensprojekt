@@ -169,7 +169,7 @@ public class firstWeek {
         World world = p.getWorld();
         Rabbit rabbit = new Rabbit(world);
         world.setTile(new Location(0, 0), rabbit);
-        rabbit.createHome();
+        rabbit.createBurrow();
         Assertions.assertTrue(rabbit.getHome() != null); // if the rabbit has dug a burrow, it should have a home
     }
 
@@ -180,7 +180,7 @@ public class firstWeek {
         World world = p.getWorld();
         Rabbit rabbit = new Rabbit(world);
         world.setTile(new Location(0, 0), rabbit);
-        rabbit.createHome();
+        rabbit.createBurrow();
         world.setNight();
         p.simulate();
         int totalRabbit = 0;
