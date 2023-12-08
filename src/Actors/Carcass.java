@@ -15,6 +15,7 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     private World world;
     private boolean isInfected = false;
     private int fungiEnergy = 0;
+    private int CARCASS_BIG_THRESHOLD = 150;
 
     public Carcass(World world, int energy) {
         this.world = world;
@@ -22,6 +23,7 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
         this.age = 0;
     }
 
+    //Constructer used for testing
     public Carcass(World world) {
         this.world = world;
         this.energy = r.nextInt(100,200);
@@ -63,7 +65,7 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
 
     @Override 
     public DisplayInformation getInformation() {
-        if (energy > 150) { //another magic number :(
+        if (energy > CARCASS_BIG_THRESHOLD) { 
             return new DisplayInformation(Color.red, "carcass");
         } else {
             return new DisplayInformation(Color.red, "carcass-small");

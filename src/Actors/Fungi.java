@@ -10,6 +10,9 @@ import java.awt.Color;
 
 public class Fungi extends Foliage implements DynamicDisplayInformationProvider, NonBlocking {
     private int spreadRange = 1;
+    private int ENERGY_LOSS = 2; //fungi loses 2 energy if it doesn't spread
+    private int ENERGY_GAIN = 10; //fungi gains 10 energy if it spreads
+
     
     public Fungi(World world, int energy) {
         super(world);
@@ -32,13 +35,13 @@ public class Fungi extends Foliage implements DynamicDisplayInformationProvider,
             if (world.getTile(tile) instanceof Carcass) {
                 if(!((Carcass) world.getTile(tile)).getIsInfected()) {
                     ((Carcass) world.getTile(tile)).setInfected(true);
-                    energy += 10; //fungi gains energy if it spreads
+                    energy += ENERGY_GAIN; //fungi gains energy if it spreads
                     infectedCarcasses++; 
                 }
             }
         }
         if(infectedCarcasses == 0) {
-            energy -= 2; //fungi loses energy if it doesn't spread
+            energy -= ENERGY_LOSS; //fungi loses energy if it doesn't spread
         }
     }
 
