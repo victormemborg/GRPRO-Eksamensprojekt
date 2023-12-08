@@ -28,6 +28,7 @@ public class Burrow extends Home implements DynamicDisplayInformationProvider {
         } else {
             big_hole = true;
         }
+        animal.setHome(this);
     }
 
     private void setRandomHole() {

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.*;
 
 import Actors.Carcass;
+import Actors.Fungi;
 import Actors.Rabbit;
 import itumulator.executable.Program;
 import itumulator.world.Location;
@@ -22,6 +23,7 @@ public class thirdWeek {
         Assertions.assertTrue(world.getNonBlocking(new Location(0,0)) instanceof Carcass); // if there is one grass tile, the test passes
     }
 
+    //Opgave K3-1b
     @Test
     public void animalsLeaveCarcass() {
         Program p = new Program(1, 800, 100);
@@ -47,5 +49,39 @@ public class thirdWeek {
         }
         carcassCount--;
         Assertions.assertEquals(0, carcassCount);
+    }
+
+    //Opgave K3-1d
+    @Test
+    public void fungiGrowsInCarcass() {
+        Program p = new Program(1, 800, 100);
+        World world = p.getWorld();
+        Location loc = new Location(0, 0);
+        world.setTile(loc, new Carcass(world, 50));
+        int fungiCount = 0;
+        while (world.getTile(loc) instanceof Carcass) { //Will run until the fungi overtakes the carcass
+            p.simulate();
+            if (world.getTile(loc) instanceof Fungi) {
+                fungiCount++;
+            }
+        }
+        Assertions.assertEquals(1, fungiCount);
+    }
+
+    //Opgave K3-1e
+    @Test
+    public void fungiNeedsCarcassToSurvive() {
+        Program p = new Program(1, 800, 100); 
+        World world = p.getWorld();
+        Location loc = new Location(0, 0);
+        world.setTile(loc, new Fungi(world, 50)); 
+        int fungiCount = 1;
+        while (world.getTile(loc) instanceof Fungi) { //Will run until the fungi dies - if the fungi doesn't die, the loop will run forever
+            p.simulate();
+        }
+        if(!(world.getTile(loc) instanceof Fungi)) { //If the fungi dies, the while loop will stop and the fungiCount will be decremented
+            fungiCount--;
+        }
+        Assertions.assertEquals(0, fungiCount);
     }
 }

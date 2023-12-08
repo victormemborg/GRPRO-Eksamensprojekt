@@ -14,7 +14,6 @@ import itumulator.world.*;
 
 public class Wolf extends Animal implements DynamicDisplayInformationProvider, Carnivore {
     private ArrayList<Wolf> pack_members;
-    private ArrayList<Animal> enemies;
     
     public Wolf(World world, ArrayList<Wolf> pack_members) {
         super(world);
@@ -28,12 +27,12 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         super.move_range = 2;
         super.diet = Set.of("Carcass");
         super.home = null;
-
+        super.mad_at = new ArrayList<>();
+        super.afraid_of = new ArrayList<>();
         this.pack_members = pack_members;
-        this.enemies = new ArrayList<>();
     }
 
-    public Wolf(World world) {
+    public Wolf(World world) { // For creating a Wolf without a pack, might delete this
         super(world);
         super.max_hp = 100;
         super.current_hp = max_hp;
@@ -45,9 +44,9 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         super.move_range = 2;
         super.diet = Set.of("Carcass");
         super.home = null;
-
-        //this.pack_members = pack_members;
-        this.enemies = new ArrayList<>();
+        super.mad_at = new ArrayList<>();
+        super.afraid_of = new ArrayList<>();
+        this.pack_members = new ArrayList<>(Arrays.asList(this));
     }
 
     public void act(World w) {
@@ -65,40 +64,46 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
 
     private void dayTimeBehaviour() {
         if (!wakeUp()) { return; }
-        // Check for nearby enemies
-        ArrayList<Location> visible_tiles = getAllLocsVisibleToPack();
-        if (checkForEnemiesOfPack(visible_tiles)) { return; }
-        // 
-        if (getEnergyPercentage() < 0.7) {
+        // Check for afraid_of-animals within vision range
+        if (checkForAfraidOfAnimals(getSurroundingTilesAsList(vision_range))) { return; }
+        
+        ArrayList<Location> visible_tiles = getAllLocsVisibleToPack(); // Pack shares vision for the rest of dayTimeBehaviour()
+
+        // Check for mad_at-animals within packs combined vision range
+        if (checkForMadAtAnimals(visible_tiles)) { return; }
+        // if it has no home, search for one
+        tryInhabitEmptyBurrow();
+        // If hungry, search for food
+        if (getEnergyPercentage() < 0.75) {
             if (searchForFoodWthin(visible_tiles)) { return; }
         }
-        //
-        if (getEnergyPercentage() < 0.4) {
+        // If even more hungry, and find no food, hunt animals
+        if (getEnergyPercentage() < 0.5) {
             ArrayList<Object> target_list = getObjectsOfClass("Animal", visible_tiles);
             target_list.removeAll(pack_members);
             if (approachAndAttackNearest(target_list)) { return; }
-        }
+        } 
+        // If not hungry, or cant find find animals nor food, move closer to pack
         if (moveToNearestMember()) { 
-            reproduce();
+            reproduce(); // So it prefers to reproduce with pack members
             return; 
         }
+        // If none of the above, move random
         moveRandom();
         reproduce(); // In case it has no packmembers it can still reproduce with wolfs from other packs
     }
 
     private void nightTimeBehaviour() {
-        
-    }
-
-    private boolean checkForEnemiesOfPack(ArrayList<Location> area) {
-        ArrayList<Object> visible_animals = getObjectsOfClass("Animal", area);
-        ArrayList<Object> visible_enimies = new ArrayList<>();
-        for (Object a : visible_animals) {
-            if (enemies.contains(a)) {
-                visible_enimies.add(a);
-            }
+        // // Check for afraid_of-animals within vision range
+        if (checkForAfraidOfAnimals(getSurroundingTilesAsList(vision_range))) { return; }
+        // Hunts alone at night if too hungry
+        if (getEnergyPercentage() < 0.3) {
+            ArrayList<Object> target_list = getObjectsOfClass("Animal", getSurroundingTilesAsList(vision_range));
+            target_list.removeAll(pack_members);
+            if (approachAndAttackNearest(target_list)) { return; }
         }
-        return approachAndAttackNearest(visible_enimies) ? true : false;
+        // Else go home and sleep
+        moveToHome();
     }
 
     private boolean moveToNearestMember() {
@@ -111,31 +116,41 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         }
     }
 
-    @Override
+    @Override // Make it so setHome() updates home for all members, but this sucks
+    public void setHome(Home home) {
+        for (Wolf member : pack_members) {
+            member.setIndividualHome(home); // Very bad
+        }
+    }
+
+    @Override // Make it so all packmembers know that the individual wolf has died
     public void die() {
+        if(pack_members.size() == 1) {
+            super.die();
+            return;
+        }
         notifyDeath();
         super.die();
     }
 
-    @Override
+    @Override // Make it so the pack is afraid of, or mad at, the agressor depending on their relative hp
     public void attacked(int dmg, Animal agressor) {
-        alertPack(agressor);
         super.attacked(dmg, agressor); //Decrases hp
-        if (!getIsMature() || this.getHp() < agressor.getHp()) { //All social animals must override .getHp() to return the combined health of the pack
-            ArrayList<Animal> threat_list = new ArrayList<>(Arrays.asList(agressor));
-            escape(threat_list);
+        if (this.getHp() < agressor.getHp()) {
+            makePackAfraidOf(agressor);
         } else {
-            attack(agressor);
+            // Do not attack back instantly! Must wait until next act(). Otherwise we might get an infinite loop of attacking.
+            makePackMadAt(agressor);
         }
     }
 
-    @Override
+    @Override // Make it so all packmembers will be mad at the victim
     void attack(Animal victim) {
-        alertPack(victim);
+        makePackMadAt(victim);
         super.attack(victim);
     }
 
-    @Override
+    @Override // Make it so getHp() returns the combined health of the pack
     public int getHp() {
         int pack_hp = 0;
         for (Wolf member : pack_members) {
@@ -144,7 +159,7 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         return pack_hp;
     }
 
-    @Override
+    @Override // Make it so the baby is added to the pack
     public Animal reproduce() {
         Wolf baby = (Wolf) super.reproduce();
         if (baby != null) {
@@ -155,32 +170,18 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         return baby;
     }
 
-    public void addPackMember(Wolf new_member) {
-        pack_members.add(new_member);
-    }
-
-    public int getIndividualHp() {
-        return current_hp;
-    }
-
-    private void alertPack(Animal animal) {
+    @Override // Make it so food is shared between all members of the pack
+    public void eat(Eatable food) {
+        int energy_split = Math.round(food.consumed() / pack_members.size());
         for (Wolf member : pack_members) {
-            member.addEnemy(animal);
+            member.increaseEnergy(energy_split);
         }
     }
 
-    private void notifyDeath() {
-        for (Wolf member : pack_members) {
-            member.removeMember(this);
-        }
-    }
-
-    public void addEnemy(Animal enemy) {
-        enemies.add(enemy);
-    }
-
-    public void removeMember(Wolf member) {
-        pack_members.remove(member);
+    @Override // Make it so the Wolf dissapears into the burrow
+    public void sleep() {
+        super.sleep();
+        world.remove(this);
     }
 
     private ArrayList<Location> getAllLocsVisibleToPack() {
@@ -193,6 +194,48 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         ArrayList<Location> loc_list = new ArrayList<>();
         loc_list.addAll(loc_set);
         return loc_list;
+    }
+
+    public void addPackMember(Wolf new_member) {
+        pack_members.add(new_member);
+    }
+
+    public int getIndividualHp() {
+        return current_hp;
+    }
+
+    private void makePackMadAt(Animal animal) {
+        for (Wolf member : pack_members) {
+            member.makeMadAt(animal);
+        }
+    }
+
+    private void makePackAfraidOf(Animal animal) {
+        for (Wolf member : pack_members) {
+            member.makeAfraidOf(animal);
+        }
+    }
+
+    public void makeMadAt(Animal animal) {
+        mad_at.add(animal);
+    }
+
+    public void makeAfraidOf(Animal animal) {
+        afraid_of.add(animal);
+    }
+
+    private void notifyDeath() {
+        for (Wolf member : pack_members) {
+            member.removeMember(this);
+        }
+    }
+
+    public void removeMember(Wolf member) {
+        pack_members.remove(member);
+    }
+
+    public void setIndividualHome(Home home) { // :(
+        super.setHome(home);
     }
 
     public DisplayInformation getInformation() {
