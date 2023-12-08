@@ -1,2 +1,2 @@
-7
-carcass 10
+20
+carcass 4

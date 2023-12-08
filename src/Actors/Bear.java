@@ -32,6 +32,20 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         this.baby = null; //reproduction needs to be overwritten
     }
 
+    // Constructor used for testing
+    public Bear(World world) {
+        super(world);
+        super.max_hp = 800;
+        super.current_hp = max_hp;
+        super.max_energy = 300;
+        super.current_energy = max_energy;
+        super.maturity_age = 4;
+        super.damage = 100;
+        super.diet = Set.of("Berry", "Carcass");
+        super.req_energy_reproduction = 0.6;
+        super.move_range = 1;
+        super.vision_range = 3;
+    }
     // Needs all Bear behaviour
     @Override
     public void act(World w) {

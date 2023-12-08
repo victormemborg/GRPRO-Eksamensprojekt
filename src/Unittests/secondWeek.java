@@ -27,29 +27,40 @@ public class secondWeek {
 
     //Opgave K2-1b
     @Test
-    public void WolfCanDie() throws FileNotFoundException {
-        Program p = new Program(1, 800, 100); 
+    public void killWolf() {
+        Program p = new Program(1, 800, 100);
         World world = p.getWorld();
+        Location loc = new Location(0, 0);
         Wolf wolf = new Wolf(world);
-        world.setTile(new Location(0,0), wolf);
-        wolf.setEnergy(0);
+        world.setTile(loc, wolf);
+        wolf.die();
         p.simulate();
-        Assertions.assertFalse(world.getTile(new Location(0,0)) instanceof Wolf);
+        Assertions.assertFalse(world.getTile(loc) instanceof Wolf); // if the wolf is dead, the tile should not contain a rabbit
     }
 
 
-    //Opgave K2-1c
+    //Opgave K2-1c - FAILS
     @Test
-    public void WolfHunts() throws FileNotFoundException {
-        Program p = new Program(2, 800, 100); 
+    public void wolfHunts() {
+        Program p = new Program(5, 800, 100);
         World world = p.getWorld();
-        Wolf wolf = new Wolf(world);
         Rabbit rabbit = new Rabbit(world);
+        Wolf wolf = new Wolf(world);
         world.setTile(new Location(0,1), wolf);
-        world.setTile(new Location(0,0), rabbit);
-        wolf.setEnergy(60);
-        p.simulate();
-        Assertions.assertFalse(world.getTile(new Location(1,0)) instanceof Rabbit);
+        world.setTile(new Location(3,1), rabbit);
+        wolf.setEnergy(100);
+        for(int i = 0; i < 30; i++) {
+            p.simulate();
+        }
+        int totalRabbit = 0;
+        for (int i = 0; i < world.getSize(); i++) {
+            for (int j = 0; j < world.getSize(); j++) {
+                if (world.getTile(new Location(i, j)) instanceof Rabbit) {
+                    totalRabbit++; // if a rabbit is found, add 1 to the totalRabbit
+                }
+            }
+        }
+        Assertions.assertEquals(0, totalRabbit); // if the rabbit has been eaten, there should be no rabbits left
     }
 
     //Opgave K2-2a
@@ -83,7 +94,7 @@ public class secondWeek {
     }
 
 
-    //Opgave K2-5b
+    //Opgave K2-5b - FAILS
     @Test
     public void bearHunts() {
         Program p = new Program(5, 800, 100);
@@ -108,7 +119,7 @@ public class secondWeek {
     }
 
 
-    //Opgave K2-5c
+    //Opgave K2-5c - FAILS
     @Test
     public void RabbitFearsBear(){
         Program p = new Program(5, 800, 100);

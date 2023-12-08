@@ -108,7 +108,6 @@ public class firstWeek {
         world.setTile(loc, rabbit);
         rabbit.die();
         p.simulate();
-
         Assertions.assertFalse(world.getTile(loc) instanceof Rabbit); // if the rabbit is dead, the tile should not contain a rabbit
     }
 

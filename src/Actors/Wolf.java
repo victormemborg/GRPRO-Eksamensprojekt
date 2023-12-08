@@ -125,6 +125,10 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
 
     @Override // Make it so all packmembers know that the individual wolf has died
     public void die() {
+        if(pack_members.size() == 1) {
+            super.die();
+            return;
+        }
         notifyDeath();
         super.die();
     }
