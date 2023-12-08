@@ -32,7 +32,7 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         this.pack_members = pack_members;
     }
 
-    public Wolf(World world) { // For creating a Wolf without a pack
+    public Wolf(World world) { // For creating a Wolf without a pack, might delete this
         super(world);
         super.max_hp = 100;
         super.current_hp = max_hp;
@@ -134,8 +134,6 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         super.attacked(dmg, agressor); //Decrases hp
         if (this.getHp() < agressor.getHp()) {
             makePackAfraidOf(agressor);
-            ArrayList<Object> threat = new ArrayList<>(Arrays.asList(agressor));
-            escape(threat);
         } else {
             // Do not attack back instantly! Must wait until next act(). Otherwise we might get an infinite loop of attacking.
             makePackMadAt(agressor);
@@ -174,6 +172,12 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         for (Wolf member : pack_members) {
             member.increaseEnergy(energy_split);
         }
+    }
+
+    @Override // Make it so the Wolf dissapears into the burrow
+    public void sleep() {
+        super.sleep();
+        world.remove(this);
     }
 
     private ArrayList<Location> getAllLocsVisibleToPack() {
