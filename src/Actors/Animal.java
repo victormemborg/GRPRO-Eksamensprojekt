@@ -108,7 +108,6 @@ public abstract class Animal implements Actor {
 
     public void die() {
         Location l = this.getLocation();
-        System.out.println(this + " dead is" + dead);
         if (!dead) {
             dead = true;
             return;
@@ -447,9 +446,9 @@ public abstract class Animal implements Actor {
 
     public boolean wakeUp() {
         try {
-            if(is_sleeping) { //check first tick to move to an empty surrounding location near its home
-                world.setCurrentLocation(Help.getRandomNearbyEmptyTile(world, home.getLocation(), vision_range)); // radius where it can spawn around its home
-                world.setTile(world.getCurrentLocation(), this);
+            if (is_sleeping) { //check first tick to move to an empty surrounding location near its home
+                Location l = Help.getRandomNearbyEmptyTile(world, home.getLocation(), vision_range);
+                world.setTile(l, this);
                 is_sleeping = false;
             }
             return true;
@@ -565,5 +564,9 @@ public abstract class Animal implements Actor {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public boolean getIsSleeping() {
+        return is_sleeping;
     }
 }
