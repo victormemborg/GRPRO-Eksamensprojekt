@@ -15,10 +15,11 @@ import itumulator.executable.Program;
 import itumulator.world.Location;
 import itumulator.world.World;
 
-public class Main {
+public class MainBeta {
+    private boolean isInfected = false;
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/tf3-2a.txt", 800, 100);
+            Program p = createProgramFromFile("data/test.txt", 800, 100);
             p.show();
             p.run();
 
@@ -46,7 +47,13 @@ public class Main {
             try {
                 //Get input
                 String line = scan.nextLine();
+                if(line.contains("fungi") || line.contains("cordyceps")) {
+                    System.out.println("Fungi found");
+                    isInfected = true;
+                }
+
                 String name = line.split(" ")[0];
+                
                 int amount = getAmount(line.split(" ")[1]);
                 Location territory = getTerritory(line);
 

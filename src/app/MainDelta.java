@@ -15,7 +15,7 @@ import itumulator.executable.Program;
 import itumulator.world.Location;
 import itumulator.world.World;
 
-public class Main {
+public class MainDelta {
     public static void main(String[] args) {
         try {
             Program p = createProgramFromFile("data/tf3-2a.txt", 800, 100);
@@ -47,29 +47,52 @@ public class Main {
                 //Get input
                 String line = scan.nextLine();
                 String name = line.split(" ")[0];
-                int amount = getAmount(line.split(" ")[1]);
-                Location territory = getTerritory(line);
+                int amount;
+                String type;
+                String class_name;
+                Class<?> class_type;
+                Location territory;
 
-                //Determine class
-                String class_name = name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
-                Class<?> class_type = Class.forName("Actors." + class_name);
 
-                //Create specified number of instances
-                if (class_name.equals("Wolf")) {
-                    System.out.println("Laver en ulv");
-                    World world = p.getWorld();
-                    ArrayList<Wolf> pack = new ArrayList<>();
+                if(name == "cordyceps"){
+                    
+                    type = line.split(" ")[1];
+
+                    class_name = type.substring(0, 1).toUpperCase() + name.substring(1, name.length());
+                    class_type = Class.forName("Actors." + class_name);
+
+                    amount = getAmount(line.split(" ")[2]);
+
                     for (int i = 0 ; i < amount ; i++) {
-                        Wolf wolf = new Wolf(world);
-                        pack.add(wolf);
-                        world.setTile(Help.getRanLocWithoutType(1, world), wolf);
+                        createInstance(p, class_type, null);
                     }
-                    System.out.println(pack);
-                }
-                for (int i = 0 ; i < amount ; i++) {
-                    createInstance(p, class_type, territory);
-                }
 
+                }else{
+                    amount = getAmount(line.split(" ")[1]);
+                    territory = getTerritory(line);
+
+                    //Determine class
+                    class_name = name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
+                    class_type = Class.forName("Actors." + class_name);
+                
+                
+
+                    //Create specified number of instances
+                    if (class_name.equals("Wolf")) {
+                        System.out.println("Laver en ulv");
+                        World world = p.getWorld();
+                        ArrayList<Wolf> pack = new ArrayList<>();
+                        for (int i = 0 ; i < amount ; i++) {
+                            Wolf wolf = new Wolf(world);
+                            pack.add(wolf);
+                            world.setTile(Help.getRanLocWithoutType(1, world), wolf);
+                        }
+                        System.out.println(pack);
+                    }
+                    for (int i = 0 ; i < amount ; i++) {
+                        createInstance(p, class_type, territory);
+                    }
+                }
             } catch (ClassNotFoundException e) {
                 System.out.println("Error, cant find class: " + e.getClass() + ", skipping line " + line_counter + " in " + path);
             }

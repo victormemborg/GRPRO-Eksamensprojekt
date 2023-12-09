@@ -15,7 +15,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
     Animal baby;
     Territory territory; // ?????????
 
-    public Bear(World world, Location territory_loc) {
+    public Bear(World world, String loc_str) {
         super(world);
         super.max_hp = 800;
         super.current_hp = max_hp;
@@ -27,7 +27,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         super.req_energy_reproduction = 0.6;
         super.move_range = 1;
         super.vision_range = 3;
-        this.territory = new Territory(world, territory_loc);
+        this.territory = new Territory(world, Help.strToLoc(loc_str));
         this.home = territory;
         this.baby = null; //reproduction needs to be overwritten
     }

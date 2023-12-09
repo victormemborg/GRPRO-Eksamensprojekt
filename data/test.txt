@@ -1,2 +1,3 @@
 20
-carcass 4
+bear 1 (4,2)
+rabbit 4-10

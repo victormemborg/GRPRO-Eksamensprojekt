@@ -347,10 +347,10 @@ public abstract class Animal implements Actor {
 
     // Generates an escape route for the animal
     boolean escape(ArrayList<Object> threat_list) {
-        if (threat_list.isEmpty()) {
+        ArrayList<Location> escape_routes = getEmptyTilesWithinRange(move_range);
+        if (threat_list.isEmpty() || escape_routes.isEmpty()) {
             return false;
         }
-        ArrayList<Location> escape_routes = getEmptyTilesWithinRange(move_range);
         //Dertermine the escape route with the highest minimal distance to all threats
         int max_dist = Integer.MIN_VALUE;
         Location best_route = escape_routes.get(r.nextInt(escape_routes.size()));

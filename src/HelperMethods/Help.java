@@ -9,6 +9,7 @@ import java.util.Set;
 
 import Actors.Animal;
 import Actors.Burrow;
+import itumulator.executable.Program;
 import itumulator.world.*;
 
 public class Help {
@@ -118,5 +119,28 @@ public class Help {
             }
         }
         list.removeAll(temp);
+    }
+
+    public static Location strToLoc(String loc_str) {
+        String temp_str = loc_str.replaceAll("\\(|\\)", "");
+        int x = Integer.parseInt(temp_str.split(",")[0]);
+        int y = Integer.parseInt(temp_str.split(",")[1]);
+        return new Location(x, y);
+    }
+
+
+
+    //Depricated getTerritory. Might become useful later
+    private static Location getTerritory(ArrayList<String> str_array) {
+        for (String str : str_array) {
+            if (str.matches("\\([0-9]+,[0-9]+\\)")) {
+                String temp_str = str.replaceAll("\\(|\\)", "");
+                int x = Integer.parseInt(temp_str.split(",")[0]);
+                int y = Integer.parseInt(temp_str.split(",")[1]);
+                str_array.remove(str);
+                return new Location(x, y);
+            }
+        }
+        return null; // This will just happen whenever the class is not bear
     }
 }
