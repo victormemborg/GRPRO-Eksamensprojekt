@@ -32,7 +32,8 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         this.baby = null; //reproduction needs to be overwritten
     }
 
-    public Bear(World world) { // Must be here because Help.strToEnergy sucks. Will fix later
+    // currently used if the input file does not contain a location for the bear
+    public Bear(World world) { 
         super(world);
         super.max_hp = 800;
         super.current_hp = max_hp;
@@ -44,7 +45,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         super.req_energy_reproduction = 0.6;
         super.move_range = 1;
         super.vision_range = 3;
-        this.territory = null;
+        this.territory = new Territory(world, Help.getRanLocWithoutType(0, world)); 
         this.home = territory;
         this.baby = null; //reproduction needs to be overwritten
     }

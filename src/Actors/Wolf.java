@@ -101,6 +101,9 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
         if (nearest_member == this) {
             return false;
         }
+        if(nearest_member == null) {
+            return false;
+        }
         moveTo(nearest_member.getLocation());
         return true;
     }
