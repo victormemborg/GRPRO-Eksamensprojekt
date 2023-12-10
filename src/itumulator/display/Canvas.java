@@ -31,7 +31,9 @@ public class Canvas extends JPanel {
     private final static Color COLOR_NON_PAINTABLE = Color.GRAY; // used as as the color for elements not associated with a color
     private final static int MS_PER_FRAME = 4; 
     private final static int SLOW_DOWN_FRAMES = 6; // used to reduce the queued amount of images (for render)
-    private final static int IMAGE_CACHE_SIZE = 100; // to avoid memory overflow, correct this one
+    private final static int IMAGE_CACHE_SIZE = 60; // to avoid memory overflow, correct this one
+    private final static int RENDER_PERMITS = 2; // to control how long the simulator awaits next simulate step
+    
     private World world; 
     private Graphics graphics;
     private int size;
@@ -42,6 +44,9 @@ public class Canvas extends JPanel {
     List<Image> queue; // queue of images to render
     private boolean lastView; // used to clear queue of images
     private ExecutorService executor;
+    private Semaphore renderPermits;
+    private int renderCount;
+    private int lastDelay;
     
     public Canvas(World world, int size, boolean startIso) {
         super();
@@ -54,6 +59,7 @@ public class Canvas extends JPanel {
 
         this.world = world;
         this.size = size;
+        this.renderPermits = new Semaphore(RENDER_PERMITS);
         this.af = new AnimationFactory(world);
         new Random();
         colorMap = new java.util.HashMap<>();
@@ -77,6 +83,18 @@ public class Canvas extends JPanel {
      */
     public boolean isIsomorphic() {
         return isomorphic;
+    }
+
+    /**
+     * Acquire a new render permit (total permits acccording to RENDER_PERMITS)
+     */
+    public void acquireRenderPermit(){
+        try {
+            if(isomorphic) renderPermits.acquire();
+        } catch (Exception e){{
+            System.out.println("Error acquiring render permit (interrupted)");
+        }}
+        
     }
 
     /**
@@ -106,6 +124,9 @@ public class Canvas extends JPanel {
         af.setDisplayInformation(cl, di);
     }
 
+    /**
+     * Paints the proper image depending on whether we are showing grid or isomorphic view (with a delay of 0)
+     */
     public void paintImage(){
         this.paintImage(0);
     }
@@ -115,7 +136,7 @@ public class Canvas extends JPanel {
      * @param delay
      */
     public void paintImage(int delay) {
-
+        this.lastDelay = delay;
         if (isomorphic){
             try {
                 // Queue all images for parallel execution
@@ -207,10 +228,19 @@ public class Canvas extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         if(!queue.isEmpty()){
-            reduceImgQueue(IMAGE_CACHE_SIZE);
+            reduceImgQueue(IMAGE_CACHE_SIZE); // in case of issues, maintain reduction of image queue
             Image img = queue.get(0);
             if(queue.size() > 1) queue.remove(0);
             g.drawImage(img, (this.getWidth()/2)-(size/2), (this.getHeight()/2)-(size/2), null);
+            
+            if(isomorphic){
+                renderCount++;
+                if(renderCount >= (lastDelay == 0 ? 0 : lastDelay / MS_PER_FRAME)){
+                    renderCount = 0;
+                    if(renderPermits.availablePermits() < RENDER_PERMITS) renderPermits.release();
+                }
+            }
+            
         }
             
     }

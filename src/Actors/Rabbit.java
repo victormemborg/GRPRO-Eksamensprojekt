@@ -1,144 +1,89 @@
 package Actors;
+
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.awt.Color;
 
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
-import itumulator.simulator.*;
 import itumulator.world.*;
 
-
-public class Rabbit extends Herbivore implements Actor, DynamicDisplayInformationProvider {
-    static int amountOfRabbits;
-    private final int FOOD_GAIN = 5; 
-    private final int FOOD_LOSS_REPRODUCTION = 25; 
-    private final int REQUIRED_FOOD_REPRODUCTION = 40; 
-    private final int MIN_AGE_ADULT = 3; 
-
-    private int age = 0;
-    private int foodLevel = 20;
-    private int energyLevel; 
-
-    private Burrow burrow = null;
-    private Location burrowLoc = null;
-
-    private boolean isNight = false;
-    private boolean isSleeping = false;
-
-    public Rabbit() {
-        amountOfRabbits += 1; 
-        this.energyLevel = 100; 
+public class Rabbit extends Animal implements DynamicDisplayInformationProvider {
+    public Rabbit(World world) {
+        super(world);
+        super.max_hp = 100;
+        super.current_hp = max_hp;
+        super.max_energy = 100;
+        super.current_energy = max_energy;
+        super.maturity_age = 3;
+        super.damage = 1;
+        super.diet = Set.of("Grass");
+        super.req_energy_reproduction = 0.6;
+        super.move_range = 2;
+        super.vision_range = 2;
+        super.home = null;
+        super.afraid_of = null;
+        super.mad_at = null;
     }
 
+    // Needs all rabbit behaviour
     @Override
-    public void act(World world) {
-        isNight = world.isNight();
-        if(!isNight) {
-            increaseAgeIfMorning(world);
-            moveAndEat(world);
-            reproduce(world); 
+    public void act(World w) {
+        if (dead) {
+            die();
+            return;
+        }
+        super.act(w);
+        if (world.isDay()) {
+            dayTimeBehaviour();
         } else {
-            moveToBurrow(world);
+            nightTimeBehaviour();
         }
     }
 
-    //Age increments everyday
-    private void increaseAgeIfMorning(World world) {
-        if(world.getCurrentTime() == 0) {
-            age++;
+    private void nightTimeBehaviour() {
+        if (!is_sleeping) {
+            moveToHome(); // Hvis det skal sættes sådan her op, så skal createHome() garantere at skabe et home. Ellers får vi NullPointerException
+        }
+        if (getHome() == null && !is_sleeping) {
+            moveRandom();
         }
     }
 
-    private int getMaxEnergy() {
-        int MAX_ENERGY = 100 - age * 2; 
-        return MAX_ENERGY;
-    }
-
-
-    //move the rabbit to its burrow
-    private void moveToBurrow(World world) {
-        if(burrow != null  && world.isTileEmpty(burrowLoc)) {
-            world.move(this, burrowLoc);
-            isSleeping = true;
-            while(energyLevel < getMaxEnergy()) {
-                energyLevel += 10;
-            }
+    private void dayTimeBehaviour() {
+        if (!wakeUp()) { return; }
+        ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
+        // Escape all visible threats
+        ArrayList<Object> threats = getObjectsWithInterface("Carnivore", visible_tiles);
+        if (escape(threats)) { return; }
+        // Look for a home
+        tryInhabitEmptyBurrow();
+        // If hungry search for food
+        if (getEnergyPercentage() < 0.5) {
+            if (searchForFoodWthin(visible_tiles)) {return;}
         }
+        // Move random and reproduce
+        moveRandom();
+        reproduce();
     }
 
-    private void killRabbit(World world) {
-        world.delete(this);
-        amountOfRabbits--;
+    @Override // Make it so the Rabbit dissapears into the burrow
+    public void sleep() {
+        super.sleep();
+        world.remove(this);
     }
-
-    private void moveAndEat(World world) {
-        isSleeping = false;
-        if(!world.getEmptySurroundingTiles().isEmpty()) {
-            if(foodLevel > 0 && energyLevel > 0) {
-                world.move(this, getEmptyRandomLocations(world));
-                digHole(world);
-                eat(world);
-                foodLevel--;
-                energyLevel--;
-            } else {
-                killRabbit(world);
-            }
-        }
-    }
-
-    private void digHole(World world) {
-        if(burrow == null) {
-            burrowLoc = world.getLocation(this); 
-            if(!world.containsNonBlocking(burrowLoc)) {
-                burrow = new Burrow();
-                world.setTile(burrowLoc, burrow);
-            }
-        }
-    }
-
-    private void eat(World world) {
-        Location foodLoc = world.getLocation(this);
-        if(world.containsNonBlocking(foodLoc) && world.getNonBlocking(foodLoc) instanceof Grass) {
-            Grass grass = (Grass) world.getNonBlocking(foodLoc);
-            if(!grass.getDying()) {
-                world.delete(world.getNonBlocking(foodLoc));
-                foodLevel += FOOD_GAIN;
-            }
-        }
-    }
-
-    private void reproduce(World world) {
-        if(age > MIN_AGE_ADULT && foodLevel > REQUIRED_FOOD_REPRODUCTION && amountOfRabbits >= 2) {
-            Location birthLocation = getEmptyRandomLocations(world);
-            if(birthLocation != null && world.isTileEmpty(birthLocation)) {
-                world.setTile(birthLocation, new Rabbit());
-                foodLevel -= FOOD_LOSS_REPRODUCTION;
-                amountOfRabbits++;
-            }
-        }
-    } 
 
     @Override
     public DisplayInformation getInformation() {
+        if (dead) {
+            return new DisplayInformation(Color.DARK_GRAY, "ghost");
+        }
         String image;
-        if(age > MIN_AGE_ADULT) {
-            image = isSleeping ? "rabbit-sleeping" : "rabbit-large";
+        if (getIsMature()) {
+            image = is_sleeping ? "rabbit-sleeping" : "rabbit-large";
         } else {
-            image = isSleeping ? "rabbit-small-sleeping" : "rabbit-small";
+            image = is_sleeping ? "rabbit-small-sleeping" : "rabbit-small";
         }
         return new DisplayInformation(Color.DARK_GRAY, image);
-    }    
-
-    private Location getEmptyRandomLocations(World world) {
-        Random r = new Random();
-        Set<Location> neighbours = world.getEmptySurroundingTiles();
-        if (neighbours.isEmpty()) {
-            return null; 
-        }
-        List<Location> list = new ArrayList<>(neighbours);
-        return list.get(r.nextInt(list.size())); 
-    }  
+    }
 }

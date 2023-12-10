@@ -11,7 +11,7 @@ import itumulator.world.World;
  * connect these. As such, one can instantiate a single {@link Program} and access relevant objects through this, as well as running the simulation.
  */
 public class Program {
-    private final int maxIsoSize = 20;
+    private final int maxIsoSize = 30; // 20
     private int size;
     private World w;
     private Canvas c;

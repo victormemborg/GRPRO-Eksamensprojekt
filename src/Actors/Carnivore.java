@@ -1,4 +1,5 @@
 package Actors;
-public class Carnivore extends Animals {
+
+public interface Carnivore {
     
 }

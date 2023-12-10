@@ -4,39 +4,53 @@ import java.awt.Color;
 
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
-import itumulator.simulator.Actor;
 import itumulator.world.NonBlocking;
 import itumulator.world.World;
 
-public class Berry extends Foliage implements Actor, DynamicDisplayInformationProvider, NonBlocking{
-    boolean eaten;
-    int regrowTime = 6;
-    
+public class Berry extends Foliage implements DynamicDisplayInformationProvider, NonBlocking, Eatable{
+    private boolean eaten;
+    private int maxBerrys;
+    private int regrowTime = 12;
 
-    public Berry(){
+    public Berry(World world) {
+        super(world);
+        this.maxBerrys = ran.nextInt(3) + 3; 
         this.eaten = false;
-    }
-
-    public Berry(boolean eaten){
-        this.eaten = eaten;
+        this.energy = 5;
     }
 
     @Override
     public void act(World world){
-
-        //Regrow mechanic
-        if(eaten && world.isDay()){ 
+        if (eaten){
             regrowTime--;
+            if (regrowTime == 0){
+                eaten = false;
+                regrowTime = 12;
+            }
         }
-        if(regrowTime == 0){
-            this.eaten = false;
-            regrowTime = 6;
+    }
+
+    //makes the berry disappear when eaten
+    public int consumed() {
+        eatBerry();
+        return energy;
+    }
+
+    private void eatBerry(){
+        if(maxBerrys > 0){
+            maxBerrys--;
+        } else {
+            eaten = true;
         }
+    }
+
+    public boolean isEaten() {
+        return eaten;
     }
 
     @Override
     public DisplayInformation getInformation(){
-        if (!eaten) {
+        if (!isEaten()) {
             return new DisplayInformation(Color.blue, "bush-berries");
         } else {
             return new DisplayInformation(Color.green, "bush");
