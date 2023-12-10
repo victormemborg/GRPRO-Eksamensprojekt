@@ -52,8 +52,6 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
     // Needs all Bear behaviour
     @Override
     public void act(World w) {
-        System.out.println(this + " isSleeping: " + is_sleeping);
-        System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
         if (dead) {
             die();
             return;

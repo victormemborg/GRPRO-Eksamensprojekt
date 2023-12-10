@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.List;
 
 import HelperMethods.Help;
 import Actors.Wolf;
@@ -18,7 +19,7 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/tf3-2a.txt", 800, 100);
+            Program p = createProgramFromFile("data/test.txt", 800, 500);
             p.show();
             p.run();
 
@@ -45,79 +46,92 @@ public class Main {
             line_counter++;
             try {
                 //Get input
-                String line = scan.nextLine();
-                String name = line.split(" ")[0];
-                int amount = getAmount(line.split(" ")[1]);
-                Location territory = getTerritory(line);
-
-                //Determine class
-                String class_name = name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
-                Class<?> class_type = Class.forName("Actors." + class_name);
-
+                ArrayList<String> line = new ArrayList<>(List.of(scan.nextLine().split(" ")));
+                Class<?> class_type = getClassType(line);
+                int amount = getAmount(line);
+                Object[] args = getArgs(line, p);
+                
                 //Create specified number of instances
-                if (class_name.equals("Wolf")) {
-                    System.out.println("Laver en ulv");
-                    World world = p.getWorld();
-                    ArrayList<Wolf> pack = new ArrayList<>();
-                    for (int i = 0 ; i < amount ; i++) {
-                        Wolf wolf = new Wolf(world);
-                        pack.add(wolf);
-                        world.setTile(Help.getRanLocWithoutType(1, world), wolf);
-                    }
-                    System.out.println(pack);
-                }
+                ArrayList<Object> cluster = new ArrayList<>(); // Only used by Wolf for now
                 for (int i = 0 ; i < amount ; i++) {
-                    createInstance(p, class_type, territory);
+                    cluster.add(createInstance(p, class_type, args));
                 }
 
-            } catch (ClassNotFoundException e) {
-                System.out.println("Error, cant find class: " + e.getClass() + ", skipping line " + line_counter + " in " + path);
+                //Special case for Wolfs
+                if (class_type.getSimpleName().equals("Wolf")) {
+                    ArrayList<Wolf> pack = Help.castArrayList(cluster);
+                    for (Wolf wolf : pack) {
+                        wolf.addPackMembers(pack);
+                    }
+                }
+                
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage() + ", skipping line " + line_counter + " in " + path);
             }
         }
         scan.close();
         return p;
     }
 
-    private static int getAmount(String amount_str) {
-        Random ran = new Random();
-        if (amount_str.contains("-")) {
-            int lower_bound = Integer.parseInt(amount_str.split("-")[0]);
-            int upper_bound = Integer.parseInt(amount_str.split("-")[1]);
-            return ran.nextInt(lower_bound, upper_bound+1);
+    private static Class<?> getClassType(ArrayList<String> str_array) throws Exception{
+        for (String str : str_array) {
+            try {
+                String class_name = str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
+                Class<?> class_type = Class.forName("Actors." + class_name);
+                str_array.remove(str);
+                return class_type;
+            } catch (Exception ignore) {
+                // Do nothing. Continue the loop
+            }
         }
-        return Integer.parseInt(amount_str);
+        throw new Exception("This line contains no valid class"); // Should make a custom exception later
     }
 
-    private static Location getTerritory(String line) {
-        try {
-            String temp_str = line.split(" ")[2].replaceAll("\\(|\\)", "");
-            int x = Integer.parseInt(temp_str.split(",")[0]);
-            int y = Integer.parseInt(temp_str.split(",")[1]);
-            return new Location(x, y);
-        } catch (IndexOutOfBoundsException iobe) {
-            //System.out.println("This actor has no territory");
-            return null;
-        }  
+    private static int getAmount(ArrayList<String> str_array) throws Exception{
+        Random ran = new Random();
+        for (String str : str_array) {
+            if (str.contains("-")) {
+                int lower_bound = Integer.parseInt(str.split("-")[0]);
+                int upper_bound = Integer.parseInt(str.split("-")[1]);
+                str_array.remove(str);
+                return ran.nextInt(lower_bound, upper_bound+1);
+            }
+            if (str.matches("^[0-9]+$")) {
+                str_array.remove(str);
+                return Integer.parseInt(str);
+            }
+        }
+        throw new Exception("This line contains no valid amount"); // Should make a custom exception later
     }
 
-    private static void createInstance(Program p, Class<?> class_type, Location territory){
+    private static Object[] getArgs(ArrayList<String> str_array, Program p) {
+        Object[] args = new Object[str_array.size() + 1]; // One index reserved for world. All Actors has this argument
+        args[0] = p.getWorld();
+        for (int i = 0 ; i < str_array.size() ; i++) { // For now, all other arguments will be given to constructor as Strings
+            args[i + 1] = str_array.get(i);
+        }
+        return args;
+    }
+
+    private static Object createInstance(Program p, Class<?> class_type, Object[] args){
         try {
             World world = p.getWorld();
             int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
-            if (territory == null) {
-                Class<?>[] cArg = new Class[1];
-                cArg[0] = World.class;
-                world.setTile(Help.getRanLocWithoutType(type, world), class_type.getDeclaredConstructor(cArg).newInstance(world));
-            } else {
-                Class<?>[] cArg = new Class[2];
-                cArg[0] = World.class;
-                cArg[1] = Location.class;
-                world.setTile(Help.getRanLocWithoutType(type, world), class_type.getDeclaredConstructor(cArg).newInstance(world, territory));
-            }
-        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            System.out.println(e.getClass() + ", trying to initialize the next object");
-        } catch (IllegalArgumentException iae) {
-            System.out.println(iae.getMessage());
+            Location loc = Help.getRanLocWithoutType(type, world);
+            Object obj = class_type.getDeclaredConstructor(getArgTypes(args)).newInstance(args);
+            world.setTile(loc, obj);
+            return obj;
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
+            System.out.println(e.getClass() + ", trying to initialize the next object. " + e.getMessage());
+            return null;
         }
+    }
+
+    private static Class<?>[] getArgTypes(Object[] args) { 
+        Class<?>[] arg_types = new Class[args.length];
+        for (int i = 0 ; i < args.length ; i++) { 
+            arg_types[i] = args[i].getClass();
+        }
+        return arg_types;
     }
 }
