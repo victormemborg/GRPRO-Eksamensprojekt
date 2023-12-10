@@ -52,9 +52,19 @@ public class MainCharlie {
                 Object[] args = getArgs(line, p);
                 
                 //Create specified number of instances
+                ArrayList<Object> cluster = new ArrayList<>(); // Only used by Wolf for now
                 for (int i = 0 ; i < amount ; i++) {
-                    createInstance(p, class_type, args);
+                    cluster.add(createInstance(p, class_type, args));
                 }
+
+                //Special case for Wolfs
+                if (class_type.getSimpleName().equals("Wolf")) {
+                    ArrayList<Wolf> pack = Help.castArrayList(cluster);
+                    for (Wolf wolf : pack) {
+                        wolf.addPackMembers(pack);
+                    }
+                }
+                
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage() + ", skipping line " + line_counter + " in " + path);
             }
@@ -94,8 +104,8 @@ public class MainCharlie {
         throw new Exception("This line contains no valid amount"); // Should make a custom exception later
     }
 
-    private static Object[] getArgs(ArrayList<String> str_array, Program p) { // This solution really sucks, but it does work
-        Object[] args = new Object[str_array.size() + 1]; // One space (first) reserved for world
+    private static Object[] getArgs(ArrayList<String> str_array, Program p) {
+        Object[] args = new Object[str_array.size() + 1]; // One index reserved for world. All Actors has this argument
         args[0] = p.getWorld();
         for (int i = 0 ; i < str_array.size() ; i++) { // For now, all other arguments will be given to constructor as Strings
             args[i + 1] = str_array.get(i);
@@ -103,15 +113,17 @@ public class MainCharlie {
         return args;
     }
 
-    private static void createInstance(Program p, Class<?> class_type, Object[] args){
-        World world = p.getWorld();
-        int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
-        Location loc = Help.getRanLocWithoutType(type, world);
+    private static Object createInstance(Program p, Class<?> class_type, Object[] args){
         try {
-            System.out.println(class_type.getDeclaredConstructors()[0].getParameters()[1].getType());
-            world.setTile(loc, class_type.getDeclaredConstructor(getArgTypes(args)).newInstance(args));
+            World world = p.getWorld();
+            int type = Arrays.toString(class_type.getInterfaces()).contains("NonBlocking") ? 0 : 1;
+            Location loc = Help.getRanLocWithoutType(type, world);
+            Object obj = class_type.getDeclaredConstructor(getArgTypes(args)).newInstance(args);
+            world.setTile(loc, obj);
+            return obj;
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
             System.out.println(e.getClass() + ", trying to initialize the next object. " + e.getMessage());
+            return null;
         }
     }
 

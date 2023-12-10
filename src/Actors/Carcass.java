@@ -1,5 +1,7 @@
 package Actors;
 
+import HelperMethods.Help;
+
 import itumulator.world.*;
 import itumulator.simulator.Actor;
 import itumulator.executable.DynamicDisplayInformationProvider;
@@ -17,13 +19,21 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     private int fungiEnergy = 0;
     private int CARCASS_BIG_THRESHOLD = 150;
 
+    // Constructor used by Animals
     public Carcass(World world, int energy) {
         this.world = world;
         this.energy = energy;
         this.age = 0;
     }
 
-    //Constructer used for testing
+    // Constructor used by Main
+    public Carcass(World world, String animal_str) {
+        this.world = world;
+        this.age = 0;
+        this.energy = Help.strToEnergy(animal_str, world);
+    }
+
+    // Constructer used for testing
     public Carcass(World world) {
         this.world = world;
         this.energy = r.nextInt(100,200);

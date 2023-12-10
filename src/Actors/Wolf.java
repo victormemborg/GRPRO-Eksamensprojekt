@@ -3,7 +3,6 @@ package Actors;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.Arrays;
 import java.util.HashSet;
 
 import HelperMethods.Help;
@@ -14,25 +13,8 @@ import itumulator.world.*;
 
 public class Wolf extends Animal implements DynamicDisplayInformationProvider, Carnivore {
     private ArrayList<Wolf> pack_members;
-    
-    public Wolf(World world, ArrayList<Wolf> pack_members) {
-        super(world);
-        super.max_hp = 250;
-        super.current_hp = max_hp;
-        super.max_energy = 200;
-        super.current_energy = max_energy;
-        super.damage = 75;
-        super.maturity_age = 3;
-        super.vision_range = 2;
-        super.move_range = 2;
-        super.diet = Set.of("Carcass");
-        super.home = null;
-        super.mad_at = new ArrayList<>();
-        super.afraid_of = new ArrayList<>();
-        this.pack_members = pack_members;
-    }
 
-    public Wolf(World world) { // For creating a Wolf without a pack, might delete this
+    public Wolf(World world) {
         super(world);
         super.max_hp = 250;
         super.current_hp = max_hp;
@@ -116,6 +98,9 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
             }
         }
         Wolf nearest_member = (Wolf) getNearestObject(Help.castArrayList(awake_members));
+        if (nearest_member == this) {
+            return false;
+        }
         moveTo(nearest_member.getLocation());
         return true;
     }
@@ -207,6 +192,10 @@ public class Wolf extends Animal implements DynamicDisplayInformationProvider, C
 
     public void addPackMember(Wolf new_member) {
         pack_members.add(new_member);
+    }
+
+    public void addPackMembers(ArrayList<Wolf> new_members) { // Primarily used by Main.java
+        pack_members.addAll(new_members);
     }
 
     public int getIndividualHp() {

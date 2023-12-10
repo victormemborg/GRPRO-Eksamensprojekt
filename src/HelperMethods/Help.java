@@ -3,13 +3,10 @@ package HelperMethods;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
 import Actors.Animal;
-import Actors.Burrow;
-import itumulator.executable.Program;
 import itumulator.world.*;
 
 public class Help {
@@ -103,10 +100,10 @@ public class Help {
         }
     }
 
-    public static <newType, oldType> ArrayList<newType> castArrayList(ArrayList<oldType> list){
+    public static <newType, oldType> ArrayList<newType> castArrayList(ArrayList<oldType> list){ // Very sketchy
         ArrayList<newType> newlyCastedArrayList = new ArrayList<newType>();
         for(oldType listObject : list){
-            newlyCastedArrayList.add((newType)listObject);
+            newlyCastedArrayList.add( (newType) listObject );
         }
         return newlyCastedArrayList;
     }
@@ -128,10 +125,26 @@ public class Help {
         return new Location(x, y);
     }
 
+    public static int strToEnergy(String animal_str, World world) {
+        try {
+            String class_name = animal_str.substring(0, 1).toUpperCase() + animal_str.substring(1, animal_str.length());
+            Class<?> class_type = Class.forName("Actors." + class_name);
+            Animal animal = (Animal) class_type.getDeclaredConstructor(World.class).newInstance(world);
+            int energy = animal.getEnergy();
+            return energy;
+        } catch (Exception e) {
+            Random ran = new Random();
+            System.out.println("There exists no Animal with name: " + animal_str);
+            int energy = ran.nextInt(100,200);
+            System.out.println("Setting energy to random number: " + energy);
+            return energy;
+        }
+    }
+
 
 
     //Depricated getTerritory. Might become useful later
-    private static Location getTerritory(ArrayList<String> str_array) {
+    public static Location getTerritory(ArrayList<String> str_array) {
         for (String str : str_array) {
             if (str.matches("\\([0-9]+,[0-9]+\\)")) {
                 String temp_str = str.replaceAll("\\(|\\)", "");
