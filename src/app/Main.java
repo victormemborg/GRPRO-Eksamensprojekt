@@ -52,14 +52,13 @@ public class Main {
                 Object[] args = getArgs(line, p);
                 
                 //Create specified number of instances
-                ArrayList<Object> cluster = new ArrayList<>(); // Only used by Wolf for now
+                ArrayList<Object> cluster = new ArrayList<>(); // Used for SocialAnimals
                 for (int i = 0 ; i < amount ; i++) {
                     cluster.add(createInstance(p, class_type, args));
                 }
 
                 //Special case for SocialAnimals
                 if (Class.forName("Actors.SocialAnimal").isAssignableFrom(class_type)) {
-                    System.out.println("test");
                     ArrayList<SocialAnimal> pack = Help.castArrayList(cluster);
                     for (SocialAnimal member : pack) {
                         member.addPackMembers(pack);

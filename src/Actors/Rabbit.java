@@ -22,15 +22,6 @@ public class Rabbit extends Animal {
         super.home = null;
     }
 
-    void nightTimeBehaviour() {
-        if (!is_sleeping) {
-            moveToHome(); // Hvis det skal sættes sådan her op, så skal createHome() garantere at skabe et home. Ellers får vi NullPointerException
-        }
-        if (getHome() == null && !is_sleeping) {
-            moveRandom();
-        }
-    }
-
     void dayTimeBehaviour() {
         if (!wakeUp()) { return; }
         ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
@@ -41,11 +32,20 @@ public class Rabbit extends Animal {
         tryInhabitEmptyBurrow();
         // If hungry search for food
         if (getEnergyPercentage() < 0.5) {
-            if (searchForFoodWthin(visible_tiles)) {return;}
+            if (searchForFoodWthin(visible_tiles)) { return; }
         }
         // Move random and reproduce
         moveRandom();
         reproduce();
+    }
+
+    void nightTimeBehaviour() {
+        if (!is_sleeping) {
+            moveToHome(); // Hvis det skal sættes sådan her op, så skal createHome() garantere at skabe et home. Ellers får vi NullPointerException
+        }
+        if (getHome() == null && !is_sleeping) {
+            moveRandom();
+        }
     }
 
     @Override // Make it so the Rabbit dissapears into the burrow
