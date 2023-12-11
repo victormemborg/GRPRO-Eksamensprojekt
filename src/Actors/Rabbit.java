@@ -82,7 +82,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         if (getIsMature()) {
             image = is_sleeping ? "rabbit-sleeping" : "rabbit-large";
         } else {
-            image = is_sleeping ? "rabbit-small-sleeping" : "rabbit-small";
+            image = is_sleeping ? "wombat-sleeping" : "wombat";
         }
         return new DisplayInformation(Color.DARK_GRAY, image);
     }

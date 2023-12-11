@@ -1,7 +1,2 @@
-20
-bear 1 (4,2)
-rabbit 15-25
-carcass bear 3
-Wolf 1
-grass 17
-berry 3-4
+7
+rabbit 7
