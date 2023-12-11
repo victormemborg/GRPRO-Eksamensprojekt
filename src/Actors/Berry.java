@@ -3,11 +3,10 @@ package Actors;
 import java.awt.Color;
 
 import itumulator.executable.DisplayInformation;
-import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.NonBlocking;
 import itumulator.world.World;
 
-public class Berry extends Foliage implements DynamicDisplayInformationProvider, NonBlocking, Eatable{
+public class Berry extends Foliage implements NonBlocking, Eatable{
     private boolean eaten;
     private int maxBerrys;
     private int regrowTime = 12;

@@ -2,12 +2,11 @@ package Actors;
 
 import itumulator.world.World;
 import itumulator.executable.DisplayInformation;
-import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.NonBlocking;
 
 import java.awt.Color;
 
-public class Grass extends Foliage implements DynamicDisplayInformationProvider, NonBlocking, Eatable {
+public class Grass extends Foliage implements NonBlocking, Eatable {
     public Grass(World world) {
         super(world);
         this.energy = 30;

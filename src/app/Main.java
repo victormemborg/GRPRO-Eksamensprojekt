@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.List;
 
 import HelperMethods.Help;
-import Actors.Wolf;
+import Actors.SocialAnimal;
 
 import itumulator.executable.Program;
 import itumulator.world.Location;
@@ -57,11 +57,12 @@ public class Main {
                     cluster.add(createInstance(p, class_type, args));
                 }
 
-                //Special case for Wolfs
-                if (class_type.getSimpleName().equals("Wolf")) {
-                    ArrayList<Wolf> pack = Help.castArrayList(cluster);
-                    for (Wolf wolf : pack) {
-                        wolf.addPackMembers(pack);
+                //Special case for SocialAnimals
+                if (Class.forName("Actors.SocialAnimal").isAssignableFrom(class_type)) {
+                    System.out.println("test");
+                    ArrayList<SocialAnimal> pack = Help.castArrayList(cluster);
+                    for (SocialAnimal member : pack) {
+                        member.addPackMembers(pack);
                     }
                 }
                 

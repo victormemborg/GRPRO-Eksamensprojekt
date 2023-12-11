@@ -7,29 +7,19 @@ import java.awt.Color;
 import HelperMethods.Help;
 
 import itumulator.executable.DisplayInformation;
-import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.world.World;
 import itumulator.world.Location;
 
-public class Bear extends Animal implements Carnivore, DynamicDisplayInformationProvider {
+public class Bear extends Animal implements Predator {
     Animal baby;
-    Territory territory; // ?????????
+    Territory territory; // Have to convince the compiler thta home is indeed of the class Territory
 
     public Bear(World world, String loc_str) {
-        super(world);
-        super.max_hp = 800;
-        super.current_hp = max_hp;
-        super.max_energy = 300;
-        super.current_energy = max_energy;
-        super.maturity_age = 4;
-        super.damage = 100;
-        super.diet = Set.of("Berry", "Carcass");
-        super.req_energy_reproduction = 0.6;
-        super.move_range = 1;
-        super.vision_range = 3;
-        this.territory = new Territory(world, Help.strToLoc(loc_str));
-        this.home = territory;
-        this.baby = null; //reproduction needs to be overwritten
+        this(world);
+        if (loc_str != null) {
+            this.territory = new Territory(world, Help.strToLoc(loc_str));
+            this.home = territory;
+        }
     }
 
     // currently used if the input file does not contain a location for the bear
@@ -39,36 +29,24 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         super.current_hp = max_hp;
         super.max_energy = 300;
         super.current_energy = max_energy;
-        super.maturity_age = 4;
         super.damage = 100;
-        super.diet = Set.of("Berry", "Carcass");
-        super.req_energy_reproduction = 0.6;
-        super.move_range = 1;
+        super.maturity_age = 4;
         super.vision_range = 3;
+        super.move_range = 1;
+        super.diet = Set.of("Berry", "Carcass");
+        this.baby = null; //reproduction needs to be overwritten
         this.territory = new Territory(world, Help.getRanLocWithoutType(0, world)); 
         this.home = territory;
-        this.baby = null; //reproduction needs to be overwritten
     }
     
-    // Needs all Bear behaviour
+    // Needs all Bear specific behaviour
     @Override
     public void act(World w) {
-        System.out.println(this + " isSleeping: " + is_sleeping);
-        System.out.println("Health: " + current_hp + "    Energy: " + current_energy);
-        if (dead) {
-            die();
-            return;
-        }
+        if (world.isDay()) { is_sleeping = false; } // Has to be done manually beacause Bear does not use the WakeUp() method, as it does not dissapear from the map when sleeping
         super.act(w);
-        if (world.isDay()) {
-            is_sleeping = false;
-            dayTimeBehaviour();
-        } else {
-            nightTimeBehaviour();
-        }
     }
 
-    private void dayTimeBehaviour() {
+    void dayTimeBehaviour() {
         ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
 
         // Check if the "afraid_of-animal" is nearby
@@ -78,7 +56,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         if (checkForMadAtAnimals(visible_tiles)) { return; }
 
         // Check territory for intruders and attack them
-        ArrayList<Object> intruders = getObjectsWithInterface("Carnivore", territory.getArea());
+        ArrayList<Object> intruders = getObjectsWithInterface("Predator", territory.getArea());
         intruders.remove(this); // Removes itself from the list of intruders
         intruders.remove(baby); // Removes its baby (if it has one) from the list of intruders
         if (approachAndAttackNearest(intruders)) { return; }
@@ -99,7 +77,7 @@ public class Bear extends Animal implements Carnivore, DynamicDisplayInformation
         reproduce();
     }
 
-    private void nightTimeBehaviour() {
+    void nightTimeBehaviour() {
         if (!is_sleeping) {
             ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
             if (checkForAfraidOfAnimals(visible_tiles)) { return; }
