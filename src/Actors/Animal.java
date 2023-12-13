@@ -590,7 +590,6 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     /**
      * Wakes up the animal if it is sleeping and moves it to an empty tile near its home
      * @return true if the animal was sleeping and has now woken up, false if not
-     * @throws NullPointerException if no empty tile is found near the home
      */
     public boolean wakeUp() {
         try {

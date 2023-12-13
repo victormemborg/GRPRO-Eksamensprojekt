@@ -75,6 +75,7 @@ public abstract class SocialAnimal extends Animal{
         this.addPackMember(baby);
         baby.addPackMember(this);
         baby.addPackMember(baby);
+        baby.setHome(home); // Make the baby get the same home as the parent
         return baby;
     }
 

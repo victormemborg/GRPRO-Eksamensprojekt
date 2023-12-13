@@ -28,7 +28,7 @@ public class Wolf extends SocialAnimal implements Predator {
 
     @Override
     void dayTimeBehaviour() {
-        if (!wakeUp()/*its the first of the month*/) { return; }
+        if (!wakeUp()) { return; }
         // Check for afraid_of-animals within vision range
         if (checkForAfraidOfAnimals(getSurroundingTilesAsList(vision_range))) { return; }
         
