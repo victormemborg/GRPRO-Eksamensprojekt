@@ -8,6 +8,12 @@ import itumulator.executable.DisplayInformation;
 import itumulator.world.*;
 
 public class Wombat extends SocialAnimal {
+    private int grassEaten;
+
+    /**
+     * Constructor for Wombat
+     * @param world The world the wombat is in
+     */
     public Wombat(World world) {
         super(world);
         super.max_hp = 200;
@@ -20,14 +26,12 @@ public class Wombat extends SocialAnimal {
         super.move_range = 2;
         super.diet = Set.of("Grass");
         super.home = null;
+        this.grassEaten = 0;
     }
 
     @Override // Make it so food is shared between all members of the pack
     public void eat(Eatable food) {
-        int energy_split = Math.round(food.consumed() / pack_members.size());
-        for (SocialAnimal member : pack_members) {
-            member.increaseEnergy(energy_split);
-        }
+        super.eat(food);
         poopBricks();
     }
 
@@ -36,7 +40,7 @@ public class Wombat extends SocialAnimal {
         //A wombat has 0.25% (2.5% for the whole day) chance of waking up each daytimetick. If it wakes up, it stays awake for 10 ticks
         double awakeProbability = 0.0025;
         int awakeDuration = 10; //Duration in ticks
-        //Check if the wombat should wake up
+        //Check if the wombat should wake up randomly
         if (r.nextDouble() < awakeProbability) {
             for (int i = 0; i < awakeDuration; i++) {
                 nightTimeBehaviour();
@@ -64,29 +68,25 @@ public class Wombat extends SocialAnimal {
         tryInhabitEmptyBurrow();
         // If hungry search for food
         if (getEnergyPercentage() < 0.75) {
-            if (searchForFoodWthin(visible_tiles)) {return;}
+            if (searchForFoodWthin(visible_tiles)) { return; }
         }
         // If not hungry, or cant find find animals nor food, move closer to pack
         if (moveToNearestMember()) { 
-            /*if(isMatingSeason()) {
-                reproduce();
-            } */
+            reproduce();
             return; 
         }
         moveRandom();
         reproduce(); // In case it has no packmembers it can still reproduce with wolfs from other packs
     }
 
-    /* 
-    private boolean isMatingSeason() {
-        //Logic for a wombat mating in the summer months
-    }  */
-
-    //Wombats will poop bricks if they are full. The bricks act as fertilizer for the foliage
+    /**
+     * Makes the wombat poop for every 5 grass it eats
+     */
     private void poopBricks() {
-        if(getEnergy() > 0.75) { 
-            //Poop poop = new Poop(world);
-            //world.setTile(this.getLocation(), poop);
+        grassEaten++;
+        if(grassEaten % 5 == 0) { 
+            Poop poop = new Poop(world);
+            world.setTile(this.getLocation(), poop);
         }
     }
 
@@ -99,7 +99,7 @@ public class Wombat extends SocialAnimal {
             image = is_sleeping ? "wombat-sleeping" : "wombat";
             //we need to add an image for a wombat baby
         } else {
-            image = is_sleeping ? "wombat-sleeping" : "wombat";
+            image = is_sleeping ? "wombat-small-sleeping" : "wombat-small";
         }
         return new DisplayInformation(Color.red, image);
     }

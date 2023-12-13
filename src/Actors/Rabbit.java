@@ -8,6 +8,10 @@ import itumulator.executable.DisplayInformation;
 import itumulator.world.*;
 
 public class Rabbit extends Animal {
+    /**
+     * Constructor for the Rabbit class
+     * @param world The world the Rabbit is in
+     */
     public Rabbit(World world) {
         super(world);
         super.max_hp = 100;
@@ -22,6 +26,7 @@ public class Rabbit extends Animal {
         super.home = null;
     }
 
+    @Override
     void dayTimeBehaviour() {
         if (!wakeUp()) { return; }
         ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
@@ -39,11 +44,10 @@ public class Rabbit extends Animal {
         reproduce();
     }
 
+    @Override
     void nightTimeBehaviour() {
         if (!is_sleeping) {
-            moveToHome(); // Hvis det skal sættes sådan her op, så skal createHome() garantere at skabe et home. Ellers får vi NullPointerException
-        }
-        if (getHome() == null && !is_sleeping) {
+            if (moveToHome()) { return; }
             moveRandom();
         }
     }

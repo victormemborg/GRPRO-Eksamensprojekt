@@ -15,7 +15,7 @@ public abstract class Foliage implements Actor, DynamicDisplayInformationProvide
 
     // Initialized in Foliage
     World world;
-    boolean withering;
+    boolean withering; 
     int time_withering;
     int MAX_WITHER_TIME;
 
@@ -24,6 +24,10 @@ public abstract class Foliage implements Actor, DynamicDisplayInformationProvide
     double spread_chance;
     double wither_chance;
 
+    /**
+     * Constructor for the Foliage class
+     * @param world The world object that the foliage is in
+     */
     Foliage(World world) {
         this.world = world;
         this.withering = false;
@@ -38,6 +42,11 @@ public abstract class Foliage implements Actor, DynamicDisplayInformationProvide
         //Might be useful to extend here in subclass....
     }
 
+    /**
+     * Tries to wither the given foliage based on the wither chance
+     * @throws IllegalArgumentException if the foliage is already dead - can only happen if the tryWithering() method is called
+     * after the act() method
+     */
     void tryWithering() {
         try {
             if (ran.nextFloat(0,1) < wither_chance) {
@@ -53,9 +62,11 @@ public abstract class Foliage implements Actor, DynamicDisplayInformationProvide
             // If the foliage is already dead do nothing
         }
     }
-
+    
+    /**
+     * Tries to spread the given foliage based on the spread chance
+     */
     void trySpread() {
-        //Roll the dice
         if (!(ran.nextFloat(0,1) < spread_chance)) {
             return;
         }
@@ -72,6 +83,10 @@ public abstract class Foliage implements Actor, DynamicDisplayInformationProvide
         }
     }
 
+    /**
+     * Returns the current location of the foliage
+     * @return The location object of the foliage
+     */
     public Location getLocation() {
         return world.getCurrentLocation();
     }

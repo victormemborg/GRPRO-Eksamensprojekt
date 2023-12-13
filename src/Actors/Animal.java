@@ -47,7 +47,14 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     ///////////////////////////////////////////////////////////////////////
     /////////////////////     Abstract functions:     /////////////////////
 
+    /**
+     * The animals behaviour during day time
+     */
     abstract void dayTimeBehaviour();
+
+    /**
+     * The animals behaviour during night time
+     */
     abstract void nightTimeBehaviour();
 
 
@@ -56,6 +63,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     /* 
         Initializes generic animal fields 
     */
+
+    /**
+     * Initializes generic animal fields
+     * @param world The world the animal lives in
+     */
     Animal(World world) {
         this.world = world;
         this.req_hp_reproduction = 0.6;   
@@ -94,11 +106,19 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         //Might be useful to extend here in subclass....  
     }
 
+    /**
+     * Reduce the victims health by the given amount
+     * @param dmg The amount of damage to dealt by the agressor
+     */
     public void attacked(int dmg, Animal agressor) {
         decreaseHp(dmg);
         //Might be useful to extend here in subclass....
     }
 
+    /**
+     * Attack the victim if it is within range
+     * @param victim The animal to be attacked
+     */
     void attack(Animal victim) {
         if (Help.getDistance(this.getLocation(), victim.getLocation()) == 1) {
             victim.attacked(damage, this);
@@ -110,6 +130,9 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     ///////////////////////////////////////////////////////////////////////
     ////////////////           General methods:           /////////////////
 
+    /**
+     * Regenerates the animals health based on its current energy level compared to its max energy level
+     */
     void passiveHpRegen() {
         double energy_ratio = (double) current_energy / max_energy;
         int healing_factor = max_hp / 20;        // Magic number
@@ -118,6 +141,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         decreaseEnergy(actual_increase / 2);     // Another magic number
     }
 
+    /**
+     * Kills the animal and replaces it with a carcass 
+     * @throws NullPointerException if the animal is already dead
+     * @throws IllegalArgumentException if the animal is not located on a Home object
+     */
     public void die() {
         Location l = this.getLocation();
         if (!dead) {
@@ -138,6 +166,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         world.delete(this);
     }
 
+    /**
+     * Checks if the given object is part of the animals diet
+     * @param object The object to be checked
+     * @return true if the object is part of the animals diet, false if not
+     */
     boolean isPartOfDiet(Object object) {
         if (object == null) {
             return false;
@@ -149,6 +182,10 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
     }
 
+    /**
+     * Moves the animal to the given location if it is not null and the animal has enough energy to move
+     * @param loc The location to move the animal to
+     */
     void move(Location loc) {
         if (loc == null) {
             return;
@@ -163,7 +200,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
     }
 
-    //Moves the Animal to the empty tile closest to its target. Returns the distance from the new location to the target
+    /** 
+     * Moves the Animal to the empty tile closest to its target. Returns the distance from the new location to the target
+     * @param target The location to move the animal to
+     * @return The distance from the new location to the target
+     */
     int moveTo(Location target) {
         Location moveLoc = getClosestEmptyLocation(target);
         if (!Help.isSameLocations(this.getLocation(), moveLoc)) {
@@ -172,6 +213,9 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return Help.getDistance(moveLoc, target);
     }
 
+    /**
+     * Moves the animal to a random empty tile within its move range
+     */
     void moveRandom() {
         Location ran_loc = Help.getRandomNearbyEmptyTile(world, this.getLocation(), move_range);
         move(ran_loc);
@@ -179,7 +223,13 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
 
     ////////////////////////////////////////////////////////////////////////
     ////////////////           Scouting methods:            ////////////////
-
+    
+    /**
+     * Returns an ArrayList of objects within the given area that implements the given interface
+     * @param target The interface to be checked for
+     * @param area An ArrayList of locations within which to search for objects
+     * @return An ArrayList of objects within the given area that implements the given interface
+     */
     ArrayList<Object> getObjectsWithInterface(String target, ArrayList<Location> area) {
         ArrayList<Object> result_list = new ArrayList<>();
         for (Location l : area) {
@@ -191,6 +241,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return result_list;
     }
 
+    /**
+     * Returns an ArrayList of objects within the given area that are part of the animals diet
+     * @param area An ArrayList of locations within which to search for objects
+     * @return An ArrayList of objects within the given area that are part of the animals diet
+     */
     ArrayList<Object> getObjectsInDiet(ArrayList<Location> area) {
         ArrayList<Object> diet_list = new ArrayList<>();
         for (Location l : area) {
@@ -202,6 +257,12 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return diet_list;
     }
 
+    /**
+     * Returns an ArrayList of objects within the given area that are of the given class
+     * @param target The class to be checked for   
+     * @param area An ArrayList of locations within which to search for objects
+     * @return An ArrayList of objects within the given area that are of the given class
+     */
     ArrayList<Object> getObjectsOfClass(String target, ArrayList<Location> area) {
         ArrayList<Object> class_list = new ArrayList<>();
         for (Location l : area) {
@@ -218,6 +279,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return class_list;
     }
 
+    /**
+     * Returns the nearest object from the given list of objects
+     * @param object_list The list of objects to be checked
+     * @return The nearest object from the given list of objects
+     */
     Object getNearestObject(ArrayList<Object> object_list) {
         Object nearest_object = null;
         for (Object o : object_list) {
@@ -231,6 +297,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return nearest_object;
     }
 
+    /**
+     * Returns an ArrayList of empty tiles within the given range
+     * @param range The range within which to search for empty tiles
+     * @return An ArrayList of empty tiles within the given range
+     */
     ArrayList<Location> getEmptyTilesWithinRange(int range) {
         Set<Location> tiles = world.getSurroundingTiles(this.getLocation(), range);
         ArrayList<Location> empty_tiles = new ArrayList<>();
@@ -242,6 +313,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return empty_tiles;
     }
 
+    /**
+     * Returns the closest empty tile to the given target
+     * @param target The target to which the closest empty tile is to be found
+     * @return The closest empty tile to the given target
+     */
     Location getClosestEmptyLocation(Location target) {
         ArrayList<Location> possible_paths = getEmptyTilesWithinRange(move_range);
         Location closest_path = this.getLocation(); // Let it stay if desirable. Set this to possible_paths.get(0) and add possible_paths.add(this.getLocation()) if you want randomization
@@ -256,7 +332,12 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return closest_path;
     }
 
-    //does not include the Animals own location
+    /**
+     * NOTE: does not include the Animals own location.
+     * Returns an ArrayList of locations within the given range
+     * @param range The range within which to search for locations
+     * @return An ArrayList of locations within the given range
+     */
     ArrayList<Location> getSurroundingTilesAsList(int range) {
         Set<Location> tiles_set = world.getSurroundingTiles(this.getLocation(), range);
         ArrayList<Location> tiles_list = new ArrayList<>();
@@ -267,8 +348,7 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     }
 
     /**
-     * Checks for surrounding burrows and sets home to the first burrow found.
-     * Not quite happy with this method, but it works for now - please take a look at it
+     * Tries to inhabit an empty burrow within the animals vision range
      */
     void tryInhabitEmptyBurrow() {
         if (home != null) {
@@ -290,6 +370,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     ///////////////////////////////////////////////////////////////////////
     ///////////////          Reproduction methods:          ///////////////
 
+    /**
+     * Reproduces with a partner if one is found within the animals vision range
+     * and the animal is mature and has not already reproduced today
+     * @return The baby created - null if no partner was found or the animal is not mature or has already reproduced today
+     */
     public Animal reproduce() {
         Animal baby = null;
         if (!getIsMature() || has_reproduced_today) {
@@ -305,7 +390,12 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
         return baby;
     }
-
+    
+    /**
+     * Sets the energy and reproduction properties of the animals after they have reproduced
+     * @param engager The animal that initiated the reproduction
+     * @param partner The animal that was reproduced with
+     */
     private void setReproduceProperties(Animal engager, Animal partner) {
         engager.current_energy *= energy_loss_reproduction;
         partner.current_energy *= energy_loss_reproduction;
@@ -313,6 +403,10 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         partner.has_reproduced_today = true;
     }
 
+    /**
+     * Places the baby at an empty tile near the engager if possible
+     * @return The baby created - null if no empty tile was found near the engager
+     */
     private Animal createBaby() {
         Location locationForBaby = Help.getRandomNearbyEmptyTile(world, this.getLocation(), 2);
         Animal baby = (Animal) Help.createNewInstanceWithArg(this, world);
@@ -327,7 +421,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     ///////////////////////////////////////////////////////////////////////
     ////////////         Defence and Attack methods:         //////////////
 
-    // Escapes any afraid_of-animal within given area. Can probably be combined with checkForMadAtAnimals() via reflection, but cant be asked
+    /**
+     * Checks for afraid_of-animals within given area and escapes from the nearest one if found
+     * @param area An ArrayList of locations within which to search for afraid_of-animals
+     * @return true if an afraid_of-animal was found and escaped from - false if not
+     */
     boolean checkForAfraidOfAnimals(ArrayList<Location> area) {
         // Updates afraid_of incase an element no longer exists in the world (has died)
         Help.removeNonExistent(world, Help.castArrayList(afraid_of));
@@ -342,7 +440,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return escape(Help.castArrayList(visible_afraid_of));
     }
 
-    // Hunts down any mad_at-animal within given area. Can probably be combined with checkForAfraidOfAnimals via reflection, but cant be asked
+    /**
+     * Checks for mad_at-animals within given area and attacks the nearest one if found
+     * @param area An ArrayList of locations within which to search for mad_at-animals
+     * @return true if a mad_at-animal was found and attacked - false if not
+     */
     boolean checkForMadAtAnimals(ArrayList<Location> area) { 
         // Updates mad_at incase an element no longer exists in the world (has died)
         Help.removeNonExistent(world, Help.castArrayList(mad_at));
@@ -357,7 +459,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return approachAndAttackNearest(visible_mad_at);
     }
 
-    // Generates an escape route for the animal
+    /**
+     * Moves the animal away from its threat_list to the escape route with the least distance to the threat_list
+     * @param threat_list The list of threats the animal will escape from
+     * @return true if the animal has threats and has moved away from the nearest threat - false if not
+     */
     boolean escape(ArrayList<Object> threat_list) {
         ArrayList<Location> escape_routes = getEmptyTilesWithinRange(move_range);
         if (threat_list.isEmpty() || escape_routes.isEmpty()) {
@@ -384,6 +490,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return true;
     }
 
+    /**
+     * Moves the animal towards its target and attacks it if it is within range of 1
+     * @param target_list The list of targets the animal will attack
+     * @return true if the animal has targets and has moved towards the nearest target - false if not
+     */
     boolean approachAndAttackNearest(ArrayList<Object> target_list) { // Maybe move to Animal.java
         if (target_list.isEmpty()) {
             return false;
@@ -399,10 +510,20 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Food methods:            /////////////////
 
+    /**
+     * Eats the given food and increases the animals energy by the amount of energy the food contains.
+     * It also calls the consumed() method of the Eatable object, which handles what should happen to the food after it has been eaten
+     * @param food The food to be eaten
+     */
     public void eat(Eatable food) {
         increaseEnergy(food.consumed());
     }
-
+    
+    /**
+     * Searches for food within the given tiles and moves towards the nearest food if found
+     * @param area An ArrayList of locations within which to search for food
+     * @return true if food was found - false if not
+     */
     boolean searchForFoodWthin(ArrayList<Location> area) {
         ArrayList<Object> food_list = getObjectsInDiet(area);
         if (!(food_list.isEmpty())) {
@@ -419,16 +540,25 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Home methods:            /////////////////
     
-    void moveToHome() {
-        if (home == null) { // We also check for this in rabbit, no?
-            setHome(createBurrow()); // Only Wolf and Rabbit can have home == null true, so create burrow
-            return;
+    /**
+     * Moves the animal towards its home, and makes it sleep. Creates a home if the animal has none. 
+     * @return False if the animal has no home, and is unable to create one. Otherwise always true.
+     */
+    boolean moveToHome() {
+        if (home == null) {
+            return setHome(createBurrow());
         }
-        if (moveTo(home.getLocation()) == 0 && !dead) { // Anoying buffer frame because of world.delete()
+        if (moveTo(home.getLocation()) == 0 && !dead) { // Annoying waiting frame because act still gets called even though it is dead
             sleep();
         }
+        return true;
     }
 
+    /**
+     * Creates a burrow at the animals location if there is no nonblocking object at the location
+     * and sets the burrow as the animals home
+     * @return the new home created - null if it was not possible to create a burrow
+     */
     public Home createBurrow() { 
         Location loc = this.getLocation();
         try {
@@ -447,7 +577,9 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
     }
 
-    //maybe, maybe not an individual method for the subclasses?
+    /**
+     * Sets is_sleeping to true and increases the animals health by 5 if it is not already at max health
+     */
     public void sleep() {
         is_sleeping = true;
         if (current_hp < max_hp) {
@@ -455,6 +587,10 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
     }
 
+    /**
+     * Wakes up the animal if it is sleeping and moves it to an empty tile near its home
+     * @return true if the animal was sleeping and has now woken up, false if not
+     */
     public boolean wakeUp() {
         try {
             if (is_sleeping) { //check first tick to move to an empty surrounding location near its home
@@ -469,21 +605,34 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
     }
 
+    /**
+     * Returns the home of the animal
+     * @return a Home object containing the home of the animal - null if it has no home
+     */
     public Home getHome() {
         return home;
     }
 
-    public void setHome(Home home) {
+    /**
+     * Sets the home of the animal
+     * @param home The home to be set for the animal
+     * @return False if home is null, true otherwise
+     */
+    public boolean setHome(Home home) {
+        if (home == null) { return false; }
         this.home = home;
-        if (home != null) {
-            home.addOccupant(this);
-        }
+        home.addOccupant(this);
+        return true;
     }
 
 
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Set methods:             /////////////////
 
+    /**
+     * Increases the current energy of the animal by the given amount
+     * @param energy The amount to increase the energy by
+     */
     void increaseEnergy(int energy) {
         int potential_energy = current_energy + energy;
         if (potential_energy > max_energy) {
@@ -493,6 +642,10 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
     }
 
+    /**
+     * Decreases the current energy of the animal by the given amount
+     * @param energy The amount to decrease the energy by
+     */
     void decreaseEnergy(int energy) {
         int potential_energy = current_energy - energy;
         if (potential_energy < 0) {
@@ -502,6 +655,11 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
     }
 
+    /**
+     * Increases the current health of the animal by the given amount
+     * @param amount The amount to increase the health by
+     * @return The amount the health was increased by
+     */
     int increaseHp(int amount) {
         int start_hp = current_hp; // for returning the amount healed
         int potential_hp = current_hp + amount;
@@ -513,6 +671,10 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return current_hp - start_hp;
     }
 
+    /**
+     * Decreases the current health of the animal by the given amount
+     * @param amount The amount to decrease the health by
+     */
     void decreaseHp(int amount) {
         if (current_hp - amount <= 0) {
             die();
@@ -521,6 +683,9 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         }
     }
 
+    /**
+     * Changes the maximum energy of the animal based on its age
+     */
     public void changeMaxEnergy() {
         this.max_energy = max_energy - age * 2; 
     }
@@ -529,54 +694,105 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     ///////////////////////////////////////////////////////////////////////
     ////////////////             Get methods:             /////////////////
 
+    /**
+     * Returns the current health of the animal
+     * @return an integer containing the current health of the animal
+     */
     public int getHp() {
         return current_hp;
     }
 
+    /**
+     * Returns the current energy of the animal
+     * @return an integer containing the current energy of the animal
+     */
     public int getEnergy() {
         return current_energy;
     }
 
+    /**
+     * @return an integer containing the damage the animal is capable of dealing
+     */
     public int getDamage() {
         return damage;
     }
 
+    /**
+     * Returns the age of the animal
+     * @return an integer containing the age of the animal
+     */
     public int getAge() {
         return age;
     }
 
+    /**
+     * Returns the truth state of the animal being mature
+     * @return true if the animal is mature, false if not
+     */
     public boolean getIsMature() {
         return age >= maturity_age;
     }
 
+    /**
+     * Returns the truth state of the animal having reproduced today
+     * @return true if the animal has reproduced today, false if not
+     */
     public boolean getHasReproducedToday() {
         return has_reproduced_today;
     }
 
+    /**
+     * Returns the location of the animal
+     * @return a Location object containing the location of the animal
+     */
     public Location getLocation() {
         return world.getLocation(this);
     }
 
+    /**
+     * Returns the current energy of the animal as a double of its maximum energy
+     * @return a double which is to be interpreted as a percentage of the animals maximum energy
+     */
     public double getEnergyPercentage() {
         return (double) current_energy / max_energy;
     }
-  
+    
+    /**
+     * Returns the vision range of the animal
+     * @return an integer containing the vision range of the animal
+     */
     public int getVisionRange() {
         return vision_range;
     }
 
+    /**
+     * Returns the maximum energy of the animal
+     * @return an integer containing the maximum energy of the animal
+     */
     public int getMaxEnergy() {
         return max_energy;
     }
 
+    /**
+     * Sets the current energy of the animal
+     * @param energy The desired energy of the animal
+     */
     public void setEnergy(int energy) {
         this.current_energy = energy;
     }
 
+    /**
+     * Sets the age of the animal
+     * @param age The desired age of the animal
+     */
     public void setAge(int age) {
         this.age = age;
     }
 
+    /**
+     * Returns the truth state of the animal being asleep
+     * @return true if the animal is sleeping, false if not
+     */
     public boolean getIsSleeping() {
         return is_sleeping;
     }

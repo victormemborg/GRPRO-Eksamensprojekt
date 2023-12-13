@@ -10,18 +10,31 @@ public class Burrow extends Home implements DynamicDisplayInformationProvider, N
     private boolean big_hole;
     Random r = new Random();
 
-    //if animal is provided as an argument, then burrow is big or small depending on animal
+    /**
+     * Creates a burrow in the world
+     * @param world the world the burrow is in
+     * @param animal the animal that is going to live in the burrow
+     * If animal is provided as an argument, then burrow is big or small depending on animal
+     */
     public Burrow(World world, Animal animal) {
         super(world);
         setBigHole(animal);
     }
 
-    //if animal isnt provided as an argument, then burrow is randomly big or small
+    /**
+     * Creates a burrow in the world
+     * @param world the world the burrow is in
+     * If animal isn't provided as an argument, then burrow is randomly big or small
+     */
     public Burrow(World world) {
         super(world);
         setRandomHole();
     }
 
+    /**
+     * Sets the size of the burrow depending on the animal
+     * @param animal the animal that is going to live in the burrow
+     */
     private void setBigHole(Animal animal) {
         if(animal instanceof Rabbit) {
             big_hole = false;
@@ -31,6 +44,9 @@ public class Burrow extends Home implements DynamicDisplayInformationProvider, N
         animal.setHome(this);
     }
 
+    /**
+     * Sets a random hole size for a burrow without having to provide an animal
+     */
     private void setRandomHole() {
         if(r.nextBoolean()) {
             big_hole = true;
@@ -39,6 +55,10 @@ public class Burrow extends Home implements DynamicDisplayInformationProvider, N
         }
     }
 
+    /**
+     * Returns whether or not the burrow is big
+     * @return true if the burrow is big, false if not
+     */
     public boolean isBigHole() {
         return big_hole;
     }

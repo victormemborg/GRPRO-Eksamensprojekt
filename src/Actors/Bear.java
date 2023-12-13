@@ -14,6 +14,11 @@ public class Bear extends Animal implements Predator {
     Animal baby;
     Territory territory; // Have to convince the compiler thta home is indeed of the class Territory
 
+    /**
+     * Constructor for objects of class Bear with immediate territory
+     * @param world The world the bear is in
+     * @param loc_str The location of where the bear should be placed and where its territory should be
+     */
     public Bear(World world, String loc_str) {
         this(world);
         if (loc_str != null) {
@@ -22,7 +27,10 @@ public class Bear extends Animal implements Predator {
         }
     }
 
-    // currently used if the input file does not contain a location for the bear
+    /**
+     * Constructor for objects of class Bear with no immediate territory
+     * @param world The world the bear is in
+     */
     public Bear(World world) { 
         super(world);
         super.max_hp = 800;
@@ -46,6 +54,7 @@ public class Bear extends Animal implements Predator {
         super.act(w);
     }
 
+    @Override
     void dayTimeBehaviour() {
         ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
 
@@ -77,6 +86,7 @@ public class Bear extends Animal implements Predator {
         reproduce();
     }
 
+    @Override
     void nightTimeBehaviour() {
         if (!is_sleeping) {
             ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
