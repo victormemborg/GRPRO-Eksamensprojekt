@@ -19,32 +19,51 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     private int fungiEnergy = 0;
     private int CARCASS_BIG_THRESHOLD = 150;
 
-    // Constructor used by Animals
+    /**
+     * Constructor used by Animal - takes an int energy and sets the energy of the carcass to the energy specified
+     * @param world the world the carcass has to be created in
+     * @param energy the energy of the carcass - associated with the energy of the animal that died
+     */
     public Carcass(World world, int energy) {
         this.world = world;
         this.energy = energy;
         this.age = 0;
     }
 
-    // Constructor used by Main
+    /**
+     * Constructor used by main - takes an input string and sets the energy of the carcass to the energy specified in the string
+     * @param world the world the carcass has to be created in
+     * @param animal_str the string that contains the energy of the carcass
+     */
     public Carcass(World world, String animal_str) {
         this.world = world;
         this.age = 0;
         this.energy = Help.strToEnergy(animal_str, world);
     }
 
-    // Constructer used for testing
+    /**
+     * Constructor used for testing - creates a carcass with a random amount of energy between 100 and 200
+     * @param world the world the carcass has to be created in
+     */
     public Carcass(World world) {
         this.world = world;
         this.energy = r.nextInt(100,200);
         this.age = 0;
     }
 
+    /**
+     * When an animal eats a carcass, the carcass is deleted and the animal gains the energy of the carcass
+     * @return the amount of energy the carcass has
+     */
     public int consumed() {
         world.delete(this);
         return energy;
     }
 
+    /**
+     * Method that determines whether or not the carcass gets infected
+     * The older the carcass is, the more likely it is to get infected
+     */
     private void decay() {
         //age determines whether or not the carcass randomly gets infected
         if(!isInfected && r.nextFloat(0,1) < age / 100) {
@@ -54,6 +73,9 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
         }
     }
 
+    /**
+     * Method that grows fungi on the carcass
+     */
     private void growFungi() {
         if(energy - fungiEnergy >= 0) { //if the fungi energy is less than the energy of the carcass, add 10 to the fungi energy
             fungiEnergy += 10;
@@ -82,10 +104,18 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
         }
     }
 
+    /**
+     * Getter for the energy of the carcass
+     * @return the energy of the carcass
+     */
     public boolean getIsInfected() {
         return isInfected;
     }
 
+    /**
+     * Setter for the infected state of the carcass
+     * @param isInfected the infected state of the carcass
+     */
     public void setInfected(boolean isInfected) {
         this.isInfected = isInfected;
     }

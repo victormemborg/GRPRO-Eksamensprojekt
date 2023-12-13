@@ -8,6 +8,10 @@ import itumulator.executable.DisplayInformation;
 import itumulator.world.*;
 
 public class Wombat extends SocialAnimal {
+    /**
+     * Constructor for Wombat
+     * @param world The world the wombat is in
+     */
     public Wombat(World world) {
         super(world);
         super.max_hp = 200;
@@ -24,10 +28,7 @@ public class Wombat extends SocialAnimal {
 
     @Override // Make it so food is shared between all members of the pack
     public void eat(Eatable food) {
-        int energy_split = Math.round(food.consumed() / pack_members.size());
-        for (SocialAnimal member : pack_members) {
-            member.increaseEnergy(energy_split);
-        }
+        super.eat(food);
         poopBricks();
     }
 
@@ -64,7 +65,7 @@ public class Wombat extends SocialAnimal {
         tryInhabitEmptyBurrow();
         // If hungry search for food
         if (getEnergyPercentage() < 0.75) {
-            if (searchForFoodWthin(visible_tiles)) {return;}
+            if (searchForFoodWthin(visible_tiles)) { return; }
         }
         // If not hungry, or cant find find animals nor food, move closer to pack
         if (moveToNearestMember()) { 
@@ -99,7 +100,7 @@ public class Wombat extends SocialAnimal {
             image = is_sleeping ? "wombat-sleeping" : "wombat";
             //we need to add an image for a wombat baby
         } else {
-            image = is_sleeping ? "wombat-sleeping" : "wombat";
+            image = is_sleeping ? "wombat-small-sleeping" : "wombat-small";
         }
         return new DisplayInformation(Color.red, image);
     }

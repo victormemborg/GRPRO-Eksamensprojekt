@@ -10,9 +10,11 @@ import Actors.Animal;
 import itumulator.world.*;
 
 public class Help {
-    /*
+    /**
      * Returns a random location that is not occupied by any object of
-     * the given type (NonBlocking: 0 - Blocking: 1)
+     * the given type in the given world
+     * @param type 0 = NonBlocking, 1 = Blocking
+     * @param world The world to search in
      */
     public static Location getRanLocWithoutType(int type, World world) {
         ArrayList<Location> empty_location_list = new ArrayList<>();
@@ -27,6 +29,12 @@ public class Help {
         return empty_location_list.get((new Random()).nextInt(empty_location_list.size()));
     }
 
+    /**
+     * Returns a random location that is not occupied by any object 
+     * @param world The world to search in
+     * @param l The location to search around
+     * @param radius The radius to search for empty tiles
+     */
     public static Location getRandomNearbyEmptyTile(World world, Location l, int radius) {
         ArrayList<Location> emptyTiles = new ArrayList<>();
         int startX = Math.max(0, l.getX() - radius);
@@ -50,12 +58,23 @@ public class Help {
         return emptyTiles.get(random.nextInt(emptyTiles.size()));
     }
 
+    /**
+     * Returns the absolute distance between two locations
+     * @param l1 first location
+     * @param l2 second location
+     */
     public static int getDistance(Location l1, Location l2) {
         //System.out.println(Math.abs(l1.getX() - l2.getX()));
         //System.out.println(Math.abs(l1.getY() - l2.getY()));
         return Math.abs(l1.getX() - l2.getX()) + Math.abs(l1.getY() - l2.getY());
     }
 
+    /**
+     * Returns if the interface is included or not
+     * @param object The object to check
+     * @param target The interface to check for
+     * @return Returns true if the interface is included - false otherwise
+     */
     public static boolean doesInterfacesInclude(Object object, String target) {
         if (object == null) {
             return false;
@@ -67,6 +86,11 @@ public class Help {
         }
     }
 
+    /**
+     * Returns the truth state between l1 and l2 being on the same location
+     * @param l1 The first objects location
+     * @param l2 The second objects location
+     */
     public static boolean isSameLocations(Location l1, Location l2) {
         if (l1 == null || l2 == null) {
             System.out.println("One (or more) of your locations are null");
@@ -78,7 +102,13 @@ public class Help {
             return false;
         }
     }
-
+    
+    /**
+     * Returns an ArrayList of all tiles with no NonBlocking objects
+     * @param world The world to search in
+     * @param loc The location to search around
+     * @param range The radius to search for empty tiles
+     */
     public static ArrayList<Location> getNearbyTileWithoutNonBlocking(World world, Location loc, int range) {
         Set<Location> surrounding_tiles = world.getSurroundingTiles(loc, range);
         ArrayList<Location> empty_tiles = new ArrayList<>();
@@ -90,6 +120,14 @@ public class Help {
         return empty_tiles;
     }
 
+    /**
+     * Creates a new instance of a class, similar to the provided object, 
+     * while invoking a constructor that takes a World parameter.
+     * @param object The original object for which a new instance is to be created.
+     * @param world The World instance to be passed as an argument to the constructor.
+     * @return A new instance of the same class as 'object' with the 'world' parameter
+     *         passed to its constructor, or null if any exceptions occur during the process.
+     */
     public static Object createNewInstanceWithArg(Object object, World world) {
         try {
             Class<?>[] cArg = new Class[1];
@@ -118,6 +156,11 @@ public class Help {
         list.removeAll(temp);
     }
 
+    /**
+     * Returns a Location converted from a String
+     * @param loc_str Takes a String in the format "(x,y)"
+     * @return Returns an instance of Location if the string is valid
+     */
     public static Location strToLoc(String loc_str) {
         String temp_str = loc_str.replaceAll("\\(|\\)", "");
         int x = Integer.parseInt(temp_str.split(",")[0]);
@@ -125,6 +168,11 @@ public class Help {
         return new Location(x, y);
     }
 
+    /**
+     * Returns an integer containing the energy of the animal
+     * @param animal_str The name of the animal
+     * @param world The world to search in
+     */
     public static int strToEnergy(String animal_str, World world) {
         try {
             String class_name = animal_str.substring(0, 1).toUpperCase() + animal_str.substring(1, animal_str.length());

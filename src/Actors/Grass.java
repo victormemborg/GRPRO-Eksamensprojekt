@@ -7,6 +7,10 @@ import itumulator.world.NonBlocking;
 import java.awt.Color;
 
 public class Grass extends Foliage implements NonBlocking, Eatable {
+    /**
+     * Creates a new grass object
+     * @param world the world the grass is in
+     */
     public Grass(World world) {
         super(world);
         this.energy = 30;
@@ -28,6 +32,9 @@ public class Grass extends Foliage implements NonBlocking, Eatable {
         }
     }
 
+    /**
+     * Returns the amount of energy the grass contains and deletes it from the world
+     */
     public int consumed() {
         world.delete(this);
         return energy;

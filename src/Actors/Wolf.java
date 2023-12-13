@@ -8,6 +8,10 @@ import itumulator.executable.DisplayInformation;
 import itumulator.world.*;
 
 public class Wolf extends SocialAnimal implements Predator {
+    /**
+     * Creates a new Wolf
+     * @param world The world the Wolf is in
+     */
     public Wolf(World world) {
         super(world);
         super.max_hp = 250;
@@ -22,6 +26,7 @@ public class Wolf extends SocialAnimal implements Predator {
         super.home = null;
     }
 
+    @Override
     void dayTimeBehaviour() {
         if (!wakeUp()/*its the first of the month*/) { return; }
         // Check for afraid_of-animals within vision range
@@ -53,6 +58,7 @@ public class Wolf extends SocialAnimal implements Predator {
         reproduce(); // In case it has no packmembers it can still reproduce with wolfs from other packs
     }
 
+    @Override
     void nightTimeBehaviour() {
         if (!is_sleeping) {
             // // Check for afraid_of-animals within vision range
@@ -64,7 +70,8 @@ public class Wolf extends SocialAnimal implements Predator {
                 if (approachAndAttackNearest(target_list)) { return; }
             }
             // Else go home and sleep
-            moveToHome();
+            if (moveToHome()) { return; }
+            moveRandom();
         }
     }
 
