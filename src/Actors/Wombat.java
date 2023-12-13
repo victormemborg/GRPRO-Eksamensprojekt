@@ -8,6 +8,8 @@ import itumulator.executable.DisplayInformation;
 import itumulator.world.*;
 
 public class Wombat extends SocialAnimal {
+    private int grassEaten;
+
     /**
      * Constructor for Wombat
      * @param world The world the wombat is in
@@ -24,6 +26,7 @@ public class Wombat extends SocialAnimal {
         super.move_range = 2;
         super.diet = Set.of("Grass");
         super.home = null;
+        this.grassEaten = 0;
     }
 
     @Override // Make it so food is shared between all members of the pack
@@ -37,7 +40,7 @@ public class Wombat extends SocialAnimal {
         //A wombat has 0.25% (2.5% for the whole day) chance of waking up each daytimetick. If it wakes up, it stays awake for 10 ticks
         double awakeProbability = 0.0025;
         int awakeDuration = 10; //Duration in ticks
-        //Check if the wombat should wake up
+        //Check if the wombat should wake up randomly
         if (r.nextDouble() < awakeProbability) {
             for (int i = 0; i < awakeDuration; i++) {
                 nightTimeBehaviour();
@@ -69,25 +72,21 @@ public class Wombat extends SocialAnimal {
         }
         // If not hungry, or cant find find animals nor food, move closer to pack
         if (moveToNearestMember()) { 
-            /*if(isMatingSeason()) {
-                reproduce();
-            } */
+            reproduce();
             return; 
         }
         moveRandom();
         reproduce(); // In case it has no packmembers it can still reproduce with wolfs from other packs
     }
 
-    /* 
-    private boolean isMatingSeason() {
-        //Logic for a wombat mating in the summer months
-    }  */
-
-    //Wombats will poop bricks if they are full. The bricks act as fertilizer for the foliage
+    /**
+     * Makes the wombat poop for every 5 grass it eats
+     */
     private void poopBricks() {
-        if(getEnergy() > 0.75) { 
-            //Poop poop = new Poop(world);
-            //world.setTile(this.getLocation(), poop);
+        grassEaten++;
+        if(grassEaten % 5 == 0) { 
+            Poop poop = new Poop(world);
+            world.setTile(this.getLocation(), poop);
         }
     }
 
