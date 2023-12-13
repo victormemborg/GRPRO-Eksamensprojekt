@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import HelperMethods.Help;
+import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.simulator.Actor;
 import itumulator.world.World;
 import itumulator.world.Location;
 
 
-public abstract class Foliage implements Actor {
+public abstract class Foliage implements Actor, DynamicDisplayInformationProvider {
     Random ran = new Random();
 
     // Initialized in Foliage

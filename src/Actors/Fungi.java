@@ -3,27 +3,26 @@ package Actors;
 import itumulator.world.*;
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
+import itumulator.simulator.Actor;
 
 import java.util.Set;
-
 import java.awt.Color;
 
-public class Fungi extends Foliage implements DynamicDisplayInformationProvider, NonBlocking {
+public class Fungi implements Actor, DynamicDisplayInformationProvider, NonBlocking {
+    private World world;
+    private int energy;
     private int spreadRange = 1;
     private int ENERGY_LOSS = 2; //fungi loses 2 energy if it doesn't spread
     private int ENERGY_GAIN = 10; //fungi gains 10 energy if it spreads
 
     
     public Fungi(World world, int energy) {
-        super(world);
+        this.world = world;
         this.energy = energy;
-        this.spread_chance = 0.00; //chance doesn't matter since fungi can only spread via carcasses
-        this.wither_chance = 0.00; //fungi can't wither
     }
 
     @Override
     public void act(World w){
-        super.act(w);
         spread();
         checkEnergy();
     }

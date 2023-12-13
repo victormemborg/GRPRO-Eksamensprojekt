@@ -6,7 +6,7 @@ import itumulator.executable.DynamicDisplayInformationProvider;
 import java.awt.Color;
 import java.util.Random;
 
-public class Burrow extends Home implements DynamicDisplayInformationProvider {
+public class Burrow extends Home implements DynamicDisplayInformationProvider, NonBlocking  {
     private boolean big_hole;
     Random r = new Random();
 

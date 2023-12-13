@@ -1,7 +1,6 @@
-20
+15
+rabbit 15-20
+grass 6-10
+wolf 3
+bear 1 
 bear 1 (4,2)
-rabbit 15-25
-carcass bear 3
-Wolf 1
-grass 17
-berry 3-4

@@ -3,7 +3,7 @@ package Actors;
 import itumulator.world.*;
 import java.util.ArrayList;
 
-abstract public class Home implements NonBlocking {
+abstract public class Home {
     World world;
     ArrayList<Animal> occupants;
     int max_occupants;

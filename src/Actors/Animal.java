@@ -8,9 +8,10 @@ import java.util.Random;
 import HelperMethods.Help;
 // Itumumulator lib
 import itumulator.world.*;
+import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.simulator.Actor;
 
-public abstract class Animal implements Actor {
+public abstract class Animal implements Actor, DynamicDisplayInformationProvider {
     ///////////////////////////////////////////////////////////////////////
     /////////////////////           Fields:           /////////////////////
 
@@ -46,7 +47,8 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     /////////////////////     Abstract functions:     /////////////////////
 
-    // No abstract functions atm
+    abstract void dayTimeBehaviour();
+    abstract void nightTimeBehaviour();
 
 
     ///////////////////////////////////////////////////////////////////////
@@ -62,6 +64,7 @@ public abstract class Animal implements Actor {
         this.energy_loss_move = 10;
         this.age = 0;
         this.has_reproduced_today = false;
+        this.is_sleeping = false;
         this.dead = false;
         this.mad_at = new ArrayList<>();
         this.afraid_of = new ArrayList<>();
@@ -73,18 +76,27 @@ public abstract class Animal implements Actor {
 
     @Override
     public void act(World w) {
+        if (dead) {   // A waiting frame to prevent a bug where the animals act is called even tho it has been deleted from the world
+            die();
+            return;
+        }
         if (world.getCurrentTime() == 0) {
             has_reproduced_today = false;
             age++;
             changeMaxEnergy();
         }
         if (!is_sleeping) { passiveHpRegen(); }
-        //Must be extended by subclass here....    
+        if (world.isDay()) {
+            dayTimeBehaviour();
+        } else {
+            nightTimeBehaviour();
+        }
+        //Might be useful to extend here in subclass....  
     }
 
     public void attacked(int dmg, Animal agressor) {
         decreaseHp(dmg);
-        //Must be extended by subclass here....
+        //Might be useful to extend here in subclass....
     }
 
     void attack(Animal victim) {
@@ -315,7 +327,7 @@ public abstract class Animal implements Actor {
     ///////////////////////////////////////////////////////////////////////
     ////////////         Defence and Attack methods:         //////////////
 
-    // Escapes any afraid_of-animal within given area. Can probably be combined with checkForMadAtAnimals() via reflection, but cant be bothered
+    // Escapes any afraid_of-animal within given area. Can probably be combined with checkForMadAtAnimals() via reflection, but cant be asked
     boolean checkForAfraidOfAnimals(ArrayList<Location> area) {
         // Updates afraid_of incase an element no longer exists in the world (has died)
         Help.removeNonExistent(world, Help.castArrayList(afraid_of));
@@ -330,7 +342,7 @@ public abstract class Animal implements Actor {
         return escape(Help.castArrayList(visible_afraid_of));
     }
 
-    // Hunts down any mad_at-animal within given area. Can probably be combined with checkForAfraidOfAnimals via reflection, but cant be bothered
+    // Hunts down any mad_at-animal within given area. Can probably be combined with checkForAfraidOfAnimals via reflection, but cant be asked
     boolean checkForMadAtAnimals(ArrayList<Location> area) { 
         // Updates mad_at incase an element no longer exists in the world (has died)
         Help.removeNonExistent(world, Help.castArrayList(mad_at));
@@ -409,7 +421,6 @@ public abstract class Animal implements Actor {
     
     void moveToHome() {
         if (home == null) { // We also check for this in rabbit, no?
-            //50 % chance to create a home or 50% to occupy one - NOT IMPLEMENTED YET
             setHome(createBurrow()); // Only Wolf and Rabbit can have home == null true, so create burrow
             return;
         }
