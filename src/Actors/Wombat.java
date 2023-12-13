@@ -90,6 +90,23 @@ public class Wombat extends SocialAnimal {
         }
     }
 
+    /**
+     * Method used when the wombat is sleeping. It checks whether there are any predators nearby
+     * @return true if there is a predator nearby, false if not
+     */
+    public boolean isScaredWhilstSleeping() {
+        if(is_sleeping) {
+            Set<Location> visible_tiles = world.getSurroundingTiles(home.getLocation(), vision_range);
+            for(Location tile : visible_tiles) {
+                Object object = world.getTile(tile);
+                if(object instanceof Predator) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public DisplayInformation getInformation() {
         if (dead) {
             return new DisplayInformation(Color.DARK_GRAY, "ghost");
@@ -97,7 +114,6 @@ public class Wombat extends SocialAnimal {
         String image;
         if (getIsMature()) {
             image = is_sleeping ? "wombat-sleeping" : "wombat";
-            //we need to add an image for a wombat baby
         } else {
             image = is_sleeping ? "wombat-small-sleeping" : "wombat-small";
         }

@@ -349,6 +349,7 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
 
     /**
      * Tries to inhabit an empty burrow within the animals vision range
+     * whilst making sure the burrow is not already inhabited by a potential predator
      */
     void tryInhabitEmptyBurrow() {
         if (home != null) {
@@ -358,8 +359,14 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         for (Burrow burrow : burrow_list) {
             if (!burrow.isBigHole() && !burrow.isFull() && this instanceof Rabbit) {
                 setHome(burrow);
+                if(burrow.getOwnerOfBurrow() == null) {
+                    burrow.setOwnerOfBurrow(this);
+                    return;
+                }
+            } else if (burrow.isBigHole() && !burrow.isFull() && this instanceof Wolf && !(burrow.getOwnerOfBurrow() instanceof Wombat)) {
+                setHome(burrow);
                 return;
-            } else if (burrow.isBigHole() && !burrow.isFull() && this instanceof Wolf) {
+            } else if(burrow.isBigHole() && !burrow.isFull() && this instanceof Wombat && !(burrow.getOwnerOfBurrow() instanceof Wolf)) {
                 setHome(burrow);
                 return;
             }
@@ -548,7 +555,7 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         if (home == null) {
             return setHome(createBurrow());
         }
-        if (moveTo(home.getLocation()) == 0 && !dead) { // Annoying waiting frame because act still gets called even though it is dead
+        if (home.getLocation() != null && moveTo(home.getLocation()) == 0 && !dead) { // Annoying waiting frame because act still gets called even though it is dead
             sleep();
         }
         return true;
