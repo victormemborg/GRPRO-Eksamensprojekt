@@ -10,7 +10,7 @@ public class Grass extends Foliage implements NonBlocking, Eatable {
     public Grass(World world) {
         super(world);
         this.energy = 30;
-        this.spread_chance = 0.25;
+        this.spread_chance = 0.1;
         this.wither_chance = 0.02;
     }
 
