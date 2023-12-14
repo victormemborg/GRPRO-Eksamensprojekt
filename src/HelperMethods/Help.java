@@ -70,10 +70,10 @@ public class Help {
     }
 
     /**
-     * Returns if the interface is included or not
+     * Returns whether the underlying class of a object implements a given interface
      * @param object The object to check
      * @param target The interface to check for
-     * @return Returns true if the interface is included - false otherwise
+     * @return Returns true if the interface is implemented - false otherwise
      */
     public static boolean doesInterfacesInclude(Object object, String target) {
         if (object == null) {
@@ -138,14 +138,26 @@ public class Help {
         }
     }
 
-    public static <newType, oldType> ArrayList<newType> castArrayList(ArrayList<oldType> list){ // Very sketchy
-        ArrayList<newType> newlyCastedArrayList = new ArrayList<newType>();
-        for(oldType listObject : list){
-            newlyCastedArrayList.add( (newType) listObject );
+    /**
+     * A generic function for casting an ArrayList of any type into an ArrayList of any other type. Should be used with caution
+     * @param <newType> The type casted to
+     * @param <oldType> The type casted from <p>
+     * @param list The ArrayList that you want to cast
+     * @return A new casted ArrayList containing the same elements
+     */
+    public static <newType, oldType> ArrayList<newType> castArrayList(ArrayList<oldType> list){
+        ArrayList<newType> casted_list = new ArrayList<newType>();
+        for(oldType obj : list){
+            casted_list.add( (newType) obj ); // Well...
         }
-        return newlyCastedArrayList;
+        return casted_list;
     }
 
+    /**
+     * Removes all objects in the given list that are not contained in the given world (as by world.conatins(Object object))
+     * @param world The world from which to check from
+     * @param list The list of elements to check
+     */
     public static void removeNonExistent(World world, ArrayList<Object> list) {
         ArrayList<Object> temp = new ArrayList<>();
         for (Object o : list) {
@@ -171,7 +183,8 @@ public class Help {
     /**
      * Returns an integer containing the energy of the animal
      * @param animal_str The name of the animal
-     * @param world The world to search in
+     * @param world Can be any instance of the World class. Is used only to create a temporary instance of the animal
+     * @return An integer representing the max_energy of the given animal, or a random integer in the range 100-200 if no animal is found
      */
     public static int strToEnergy(String animal_str, World world) {
         try {

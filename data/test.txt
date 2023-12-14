@@ -1,6 +1,7 @@
 10
 rabbit 5
 burrow 1
-wombat 3
+bear 1 (2,2)
 wolf 3
 carcass fungi 3
+grass 20-40

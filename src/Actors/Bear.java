@@ -29,7 +29,7 @@ public class Bear extends Animal implements Predator {
         super.vision_range = 3;
         super.move_range = 1;
         super.diet = Set.of("Berry", "Carcass");
-        this.baby = null; //reproduction needs to be overwritten
+        this.baby = null;
         this.territory = new Territory(world, Help.getRanLocWithoutType(0, world)); 
         super.home = territory;
         super.home_image = null; // A bears territory is invisible
@@ -108,9 +108,15 @@ public class Bear extends Animal implements Predator {
         if ( ((double) current_hp / agressor.getHp()) < 0.75) { //if the agressor has around 30-35 % more health than the bear
             afraid_of.add(agressor);
         } else {
-            // Do not attack back instantly! Must wait until next act(). Otherwise we might get an infinite loop of attacking.
+            // Do not attack back instantly! Must wait until next act(). Otherwise we could get an infinite loop of attacking.
             mad_at.add(agressor);
         }
+    }
+
+    @Override
+    public Animal reproduce() {
+        baby = super.reproduce();
+        return baby;
     }
 
     @Override
