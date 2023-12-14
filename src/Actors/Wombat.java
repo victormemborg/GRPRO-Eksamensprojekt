@@ -29,6 +29,7 @@ public class Wombat extends SocialAnimal {
         super.move_range = 2;
         super.diet = Set.of("Grass");
         super.home = null;
+        super.home_image = "hole";
         this.grassEaten = 0;
     }
 
@@ -47,7 +48,6 @@ public class Wombat extends SocialAnimal {
         }
         if (ticks_awake < awakeDuration) {
             nightTimeBehaviour();
-            System.out.println(this + "   Wombat is awake");
             ticks_awake++;
             return;
         }
@@ -80,6 +80,14 @@ public class Wombat extends SocialAnimal {
         reproduce(); // In case it has no packmembers it can still reproduce with wolfs from other packs
     }
 
+    @Override
+    public String getHomeImage() {
+        if (isScaredWhilstSleeping()) {
+            return "wombat-hole-scared";
+        }
+        return super.getHomeImage();
+    }
+
     /**
      * Makes the wombat poop for every 5 grass it eats
      */
@@ -97,7 +105,9 @@ public class Wombat extends SocialAnimal {
      */
     public boolean isScaredWhilstSleeping() {
         if(!is_sleeping) { return false; }
-        ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
+        Set<Location> tiles_set = world.getSurroundingTiles(home.getLocation(), vision_range);
+        ArrayList<Location> visible_tiles = new ArrayList<>();
+        visible_tiles.addAll(tiles_set);
         ArrayList<Object> visible_predators = getObjectsWithInterface("Predator", visible_tiles);
         return !visible_predators.isEmpty(); 
     }

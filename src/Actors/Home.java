@@ -31,9 +31,9 @@ abstract public class Home {
      * @param occupant the animal to add
      */
     public void addOccupant(Animal occupant) {
-        if(!isFull()) {
+        //if(!isFull()) {
             occupants.add(occupant);
-        }
+        //}
     }
 
     /**

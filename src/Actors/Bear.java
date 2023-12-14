@@ -15,19 +15,6 @@ public class Bear extends Animal implements Predator {
     Territory territory; // Have to convince the compiler thta home is indeed of the class Territory
 
     /**
-     * Constructor for objects of class Bear with immediate territory
-     * @param world The world the bear is in
-     * @param loc_str The location of where the bear should be placed and where its territory should be
-     */
-    public Bear(World world, String loc_str) {
-        this(world);
-        if (loc_str != null) {
-            this.territory = new Territory(world, Help.strToLoc(loc_str));
-            this.home = territory;
-        }
-    }
-
-    /**
      * Constructor for objects of class Bear with no immediate territory
      * @param world The world the bear is in
      */
@@ -44,7 +31,21 @@ public class Bear extends Animal implements Predator {
         super.diet = Set.of("Berry", "Carcass");
         this.baby = null; //reproduction needs to be overwritten
         this.territory = new Territory(world, Help.getRanLocWithoutType(0, world)); 
-        this.home = territory;
+        super.home = territory;
+        super.home_image = null; // A bears territory is invisible
+    }
+
+    /**
+     * Constructor for objects of class Bear with immediate territory
+     * @param world The world the bear is in
+     * @param loc_str The location of where the bear should be placed and where its territory should be
+     */
+    public Bear(World world, String loc_str) {
+        this(world);
+        if (loc_str != null) {
+            this.territory = new Territory(world, Help.strToLoc(loc_str));
+            this.home = territory;
+        }
     }
     
     // Needs all Bear specific behaviour

@@ -42,6 +42,7 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
     int move_range;                   // The amount of tiles the animal can move per action
     Set<String> diet;                 // A unsorted set of strings containg all objects the animal can consume
     Home home;                        // The home of the animal. Burrow for Rabbits and Wolfs, territory for Bears
+    String home_image;                // The visual representation of the animals home
 
 
     ///////////////////////////////////////////////////////////////////////
@@ -147,11 +148,16 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
      * @throws IllegalArgumentException if the animal is not located on a Home object
      */
     public void die() {
-        Location l = this.getLocation();
+        if (home != null) {
+            home.removeOccupant(this);
+            home = null;
+        }
         if (!dead) {
             dead = true;
             return;
         }
+
+        Location l = this.getLocation();
         try {
             Object object = world.getNonBlocking(l);
             if (object instanceof Home) {
@@ -347,32 +353,6 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         return tiles_list;
     }
 
-    /**
-     * Tries to inhabit an empty burrow within the animals vision range
-     * whilst making sure the burrow is not already inhabited by a potential predator
-     */
-    void tryInhabitEmptyBurrow() {
-        if (home != null) {
-            return;
-        }
-        ArrayList<Burrow> burrow_list = Help.castArrayList(getObjectsOfClass("Burrow", getSurroundingTilesAsList(vision_range))); // get all burrows within vision range
-        for (Burrow burrow : burrow_list) {
-            if (!burrow.isBigHole() && !burrow.isFull() && this instanceof Rabbit) {
-                setHome(burrow);
-                if(burrow.getOwnerOfBurrow() == null) {
-                    burrow.setOwnerOfBurrow(this);
-                    return;
-                }
-            } else if (burrow.isBigHole() && !burrow.isFull() && this instanceof Wolf && !(burrow.getOwnerOfBurrow() instanceof Wombat)) {
-                setHome(burrow);
-                return;
-            } else if(burrow.isBigHole() && !burrow.isFull() && this instanceof Wombat && !(burrow.getOwnerOfBurrow() instanceof Wolf)) {
-                setHome(burrow);
-                return;
-            }
-        }
-    }
-
 
     ///////////////////////////////////////////////////////////////////////
     ///////////////          Reproduction methods:          ///////////////
@@ -553,7 +533,8 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
      */
     boolean moveToHome() {
         if (home == null) {
-            return setHome(createBurrow());
+            boolean status = setHome(createBurrow());
+            return status; // Only bears do not live in a burrow, and their home can never be null
         }
         if (moveTo(home.getLocation()) == 0 && !dead) { // Annoying waiting frame because act still gets called even though it is dead
             sleep();
@@ -581,6 +562,24 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
             return new_home;
         } catch (IllegalArgumentException iae) {
             return null;
+        }
+    }
+
+    /**
+     * Tries to inhabit an empty burrow within the animals vision range
+     * whilst making sure the burrow is not already inhabited by a potential predator
+     */
+    void tryInhabitEmptyBurrow() {
+        if (home != null) {
+            return;
+        }
+        ArrayList<Object> uncasted_list = getObjectsOfClass("Burrow", getSurroundingTilesAsList(vision_range)); // get all burrows within vision range
+        ArrayList<Burrow> burrow_list = Help.castArrayList(uncasted_list);
+        for (Burrow burrow : burrow_list) {
+            if (burrow.isAvailableTo(this)) {
+                setHome(burrow);
+                return;
+            }
         }
     }
 
@@ -625,9 +624,9 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
      * @param home The home to be set for the animal
      * @return False if home is null, true otherwise
      */
-    public boolean setHome(Home home) {
-        if (home == null) { return false; }
-        this.home = home;
+    public boolean setHome(Home hometemp) {
+        if (hometemp == null) { return false; }
+        this.home = hometemp;
         home.addOccupant(this);
         return true;
     }
@@ -802,5 +801,9 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
      */
     public boolean getIsSleeping() {
         return is_sleeping;
+    }
+
+    public String getHomeImage() {
+        return home_image;
     }
 }

@@ -24,6 +24,7 @@ public class Rabbit extends Animal {
         super.move_range = 2;
         super.diet = Set.of("Grass");
         super.home = null;
+        super.home_image = "hole-small";
     }
 
     @Override

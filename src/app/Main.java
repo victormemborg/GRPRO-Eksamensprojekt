@@ -19,7 +19,7 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/test.txt", 800, 50);
+            Program p = createProgramFromFile("data/test.txt", 800, 250);
             p.show();
             p.run();
 

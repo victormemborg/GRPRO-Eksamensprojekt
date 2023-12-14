@@ -15,31 +15,9 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     private int energy;
     private int age;
     private World world;
-    private boolean isInfected = false;
-    private int fungiEnergy = 0;
-    private int CARCASS_BIG_THRESHOLD = 150;
-
-    /**
-     * Constructor used by Animal - takes an int energy and sets the energy of the carcass to the energy specified
-     * @param world the world the carcass has to be created in
-     * @param energy the energy of the carcass - associated with the energy of the animal that died
-     */
-    public Carcass(World world, int energy) {
-        this.world = world;
-        this.energy = energy;
-        this.age = 0;
-    }
-
-    /**
-     * Constructor used by main - takes an input string and sets the energy of the carcass to the energy specified in the string
-     * @param world the world the carcass has to be created in
-     * @param animal_str the string that contains the energy of the carcass
-     */
-    public Carcass(World world, String animal_str) {
-        this.world = world;
-        this.age = 0;
-        this.energy = Help.strToEnergy(animal_str, world);
-    }
+    private boolean isInfected;
+    private int fungiEnergy;
+    private final int CARCASS_BIG_THRESHOLD = 150;
 
     /**
      * Constructor used for testing - creates a carcass with a random amount of energy between 100 and 200
@@ -49,6 +27,32 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
         this.world = world;
         this.energy = r.nextInt(100,200);
         this.age = 0;
+        this.isInfected = false;
+        this.fungiEnergy = 0;
+    }
+
+    /**
+     * Constructor used by Animal - takes an int energy and sets the energy of the carcass to the energy specified
+     * @param world the world the carcass has to be created in
+     * @param energy the energy of the carcass - associated with the energy of the animal that died
+     */
+    public Carcass(World world, int energy) {
+        this(world);
+        this.energy = energy;
+    }
+
+    /**
+     * Constructor used by main - takes an input string and sets the energy of the carcass to the energy specified in the string
+     * @param world the world the carcass has to be created in
+     * @param animal_str the string that contains the energy of the carcass
+     */
+    public Carcass(World world, String str) {
+        this(world);
+        if (str.equals("fungi")) {
+            this.isInfected = true;
+        } else {
+            this.energy = Help.strToEnergy(str, world);
+        }
     }
 
     /**
@@ -89,8 +93,7 @@ public class Carcass implements Actor, DynamicDisplayInformationProvider, NonBlo
     }
 
     @Override
-    public void act(World world) {
-        this.world = world;
+    public void act(World w) {
         age++;
         decay();
     }
