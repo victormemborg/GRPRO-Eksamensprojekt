@@ -555,7 +555,7 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
         if (home == null) {
             return setHome(createBurrow());
         }
-        if (home.getLocation() != null && moveTo(home.getLocation()) == 0 && !dead) { // Annoying waiting frame because act still gets called even though it is dead
+        if (moveTo(home.getLocation()) == 0 && !dead) { // Annoying waiting frame because act still gets called even though it is dead
             sleep();
         }
         return true;

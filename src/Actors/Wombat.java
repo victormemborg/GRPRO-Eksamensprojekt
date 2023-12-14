@@ -9,6 +9,9 @@ import itumulator.world.*;
 
 public class Wombat extends SocialAnimal {
     private int grassEaten;
+    private double awakeProbability = 0.0025;
+    private int awakeDuration = 10; //Duration in ticks
+    private int ticks_awake = 0;
 
     /**
      * Constructor for Wombat
@@ -38,21 +41,19 @@ public class Wombat extends SocialAnimal {
     @Override
     void dayTimeBehaviour() {
         //A wombat has 0.25% (2.5% for the whole day) chance of waking up each daytimetick. If it wakes up, it stays awake for 10 ticks
-        double awakeProbability = 0.0025;
-        int awakeDuration = 10; //Duration in ticks
         //Check if the wombat should wake up randomly
         if (r.nextDouble() < awakeProbability) {
-            for (int i = 0; i < awakeDuration; i++) {
-                nightTimeBehaviour();
-                System.out.println("Wombat is awake");
-            }
-        } else {
-            if (!is_sleeping) {
-                moveToHome();
-            }
-            if (getHome() == null && !is_sleeping) {
-                moveRandom();
-            }
+            ticks_awake = 0;
+        }
+        if (ticks_awake < awakeDuration) {
+            nightTimeBehaviour();
+            System.out.println(this + "   Wombat is awake");
+            ticks_awake++;
+            return;
+        }
+        if (!is_sleeping) {
+            if (moveToHome()) { return; }
+            moveRandom();
         }
     }
 
@@ -95,16 +96,10 @@ public class Wombat extends SocialAnimal {
      * @return true if there is a predator nearby, false if not
      */
     public boolean isScaredWhilstSleeping() {
-        if(is_sleeping) {
-            Set<Location> visible_tiles = world.getSurroundingTiles(home.getLocation(), vision_range);
-            for(Location tile : visible_tiles) {
-                Object object = world.getTile(tile);
-                if(object instanceof Predator) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        if(!is_sleeping) { return false; }
+        ArrayList<Location> visible_tiles = getSurroundingTilesAsList(vision_range);
+        ArrayList<Object> visible_predators = getObjectsWithInterface("Predator", visible_tiles);
+        return !visible_predators.isEmpty(); 
     }
 
     public DisplayInformation getInformation() {

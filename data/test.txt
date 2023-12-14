@@ -1,8 +1,3 @@
 10
 grass 10
-rabbit 4-8
-rabbit 1
-wolf 3
-wolf 2 
-wombat 2
 wombat 2
