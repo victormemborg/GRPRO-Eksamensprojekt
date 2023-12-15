@@ -181,7 +181,7 @@ public class secondWeek {
     //Opgave K2-7a
     @Test
     public void bearCanEatBerrys() throws FileNotFoundException {
-        Program p = Main.createProgramFromFile("data/Unittest/week2_berry.txt", 800, 100); // BEAR AMOUNT: 1, WORLD SIZE: 1x1 (by our txt file)
+        Program p = Main.createProgramFromFile("data/Unittest/week2_berry.txt", 800, 100); // BERRY AMOUNT: 1, WORLD SIZE: 1x1 (by our txt file)
         World world = p.getWorld();
         Bear bear = new Bear(world);
         Berry berry = null;
@@ -198,7 +198,7 @@ public class secondWeek {
         while(berry.isEaten() == false) {
             p.simulate();
         }
-        assertTrue(berry.isEaten()); // if the bear has eaten, it should have more energy than before
+        assertTrue(berry.isEaten()); // since the bear has low energy, it should eat the berry and the berry should be eaten
     }
 
     

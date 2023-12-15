@@ -531,7 +531,7 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
      * Moves the animal towards its home, and makes it sleep. Creates a home if the animal has none. 
      * @return False if the animal has no home, and is unable to create one. Otherwise always true.
      */
-    boolean moveToHome() {
+    public boolean moveToHome() {
         if (home == null) {
             boolean status = setHome(createBurrow());
             return status; // Only bears do not live in a burrow, and their home can never be null

@@ -36,7 +36,7 @@ public class Poop implements Actor, DynamicDisplayInformationProvider, NonBlocki
 
 
     /**
-     * Fertilizes the surrounding tiles
+     * Fertilizes the surrounding tiles - the radius is predefined to 1
      */
     private void fertilize() {
         Set<Location> surrounding_tiles = world.getSurroundingTiles(world.getCurrentLocation(), 1);
