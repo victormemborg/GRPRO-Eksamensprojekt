@@ -9,6 +9,9 @@ import itumulator.world.*;
 
 public class Wombat extends SocialAnimal {
     private int grassEaten;
+    private double awakeProbability = 0.0025;
+    private int awakeDuration = 10; //Duration in ticks
+    private int ticks_awake = 0;
 
     /**
      * Constructor for Wombat
@@ -26,6 +29,7 @@ public class Wombat extends SocialAnimal {
         super.move_range = 2;
         super.diet = Set.of("Grass");
         super.home = null;
+        super.home_image = "hole";
         this.grassEaten = 0;
     }
 
@@ -38,21 +42,18 @@ public class Wombat extends SocialAnimal {
     @Override
     void dayTimeBehaviour() {
         //A wombat has 0.25% (2.5% for the whole day) chance of waking up each daytimetick. If it wakes up, it stays awake for 10 ticks
-        double awakeProbability = 0.0025;
-        int awakeDuration = 10; //Duration in ticks
         //Check if the wombat should wake up randomly
         if (r.nextDouble() < awakeProbability) {
-            for (int i = 0; i < awakeDuration; i++) {
-                nightTimeBehaviour();
-                System.out.println("Wombat is awake");
-            }
-        } else {
-            if (!is_sleeping) {
-                moveToHome();
-            }
-            if (getHome() == null && !is_sleeping) {
-                moveRandom();
-            }
+            ticks_awake = 0;
+        }
+        if (ticks_awake < awakeDuration) {
+            nightTimeBehaviour();
+            ticks_awake++;
+            return;
+        }
+        if (!is_sleeping) {
+            if (moveToHome()) { return; }
+            moveRandom();
         }
     }
 
@@ -79,6 +80,14 @@ public class Wombat extends SocialAnimal {
         reproduce(); // In case it has no packmembers it can still reproduce with wolfs from other packs
     }
 
+    @Override
+    public String getHomeImage() {
+        if (isScaredWhilstSleeping()) {
+            return "wombat-hole-scared";
+        }
+        return super.getHomeImage();
+    }
+
     /**
      * Makes the wombat poop for every 5 grass it eats
      */
@@ -90,6 +99,19 @@ public class Wombat extends SocialAnimal {
         }
     }
 
+    /**
+     * Method used when the wombat is sleeping. It checks whether there are any predators nearby
+     * @return true if there is a predator nearby, false if not
+     */
+    public boolean isScaredWhilstSleeping() {
+        if(!is_sleeping) { return false; }
+        Set<Location> tiles_set = world.getSurroundingTiles(home.getLocation(), vision_range);
+        ArrayList<Location> visible_tiles = new ArrayList<>();
+        visible_tiles.addAll(tiles_set);
+        ArrayList<Object> visible_predators = getObjectsWithInterface("Predator", visible_tiles);
+        return !visible_predators.isEmpty(); 
+    }
+
     public DisplayInformation getInformation() {
         if (dead) {
             return new DisplayInformation(Color.DARK_GRAY, "ghost");
@@ -97,7 +119,6 @@ public class Wombat extends SocialAnimal {
         String image;
         if (getIsMature()) {
             image = is_sleeping ? "wombat-sleeping" : "wombat";
-            //we need to add an image for a wombat baby
         } else {
             image = is_sleeping ? "wombat-small-sleeping" : "wombat-small";
         }

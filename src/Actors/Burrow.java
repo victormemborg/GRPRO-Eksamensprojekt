@@ -7,67 +7,57 @@ import java.awt.Color;
 import java.util.Random;
 
 public class Burrow extends Home implements DynamicDisplayInformationProvider, NonBlocking  {
-    private boolean big_hole;
-    Random r = new Random();
+    private Random r = new Random();
+    private String image;
 
     /**
      * Creates a burrow in the world
      * @param world the world the burrow is in
-     * @param animal the animal that is going to live in the burrow
-     * If animal is provided as an argument, then burrow is big or small depending on animal
+     * @param animal the animal that is going to live in the burrow.
+     * If animal is provided as an argument, then the burrow takes the size specified by the animals home_image
      */
     public Burrow(World world, Animal animal) {
         super(world);
-        setBigHole(animal);
+        occupants.add(animal);
+        image = animal.getHomeImage();
     }
 
     /**
      * Creates a burrow in the world
-     * @param world the world the burrow is in
+     * @param world the world the burrow is in.
      * If animal isn't provided as an argument, then burrow is randomly big or small
      */
     public Burrow(World world) {
         super(world);
-        setRandomHole();
-    }
-
-    /**
-     * Sets the size of the burrow depending on the animal
-     * @param animal the animal that is going to live in the burrow
-     */
-    private void setBigHole(Animal animal) {
-        if(animal instanceof Rabbit) {
-            big_hole = false;
+        if (r.nextBoolean()) {
+            image = "hole";
         } else {
-            big_hole = true;
-        }
-        animal.setHome(this);
-    }
-
-    /**
-     * Sets a random hole size for a burrow without having to provide an animal
-     */
-    private void setRandomHole() {
-        if(r.nextBoolean()) {
-            big_hole = true;
-        } else {
-            big_hole = false;
+            image = "hole-small";
         }
     }
 
     /**
-     * Returns whether or not the burrow is big
-     * @return true if the burrow is big, false if not
+     * A method to check whether any given animal is allowed to make this burrow its home
+     * @param animal The animal for which you want to check
+     * @return True if, and <strong>only</strong> if, all of the following statements are true aswell: <p>
+     * 1. The burrow has the right size <p>
+     * 2. The burrow is empty or only occupied by animals of the same spicies <P>
+     * 3. isFull() returns false
      */
-    public boolean isBigHole() {
-        return big_hole;
+    public boolean isAvailableTo(Animal animal) {
+        if ( !image.equals(animal.getHomeImage()) ) { return false; }
+        if ( isFull() ) { return false; }
+        if ( occupants.isEmpty() ) { return true;  } // 
+        if ( occupants.get(0).getClass() != animal.getClass() ) { return false; }
+        return true;
     }
 
+    @Override
     public DisplayInformation getInformation() {
-        if(big_hole) {
-            return new DisplayInformation(Color.black, "hole");
-        } else {
-            return new DisplayInformation(Color.black, "hole-small");
+        if (occupants.isEmpty()) {
+            return new DisplayInformation(Color.black, image);
         }
+        String image_key = occupants.get(0).getHomeImage(); // 
+        return new DisplayInformation(Color.black, image_key);
     }
 }

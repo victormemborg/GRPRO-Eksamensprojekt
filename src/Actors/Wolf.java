@@ -24,6 +24,7 @@ public class Wolf extends SocialAnimal implements Predator {
         super.move_range = 2;
         super.diet = Set.of("Carcass");
         super.home = null;
+        super.home_image = "hole";
     }
 
     @Override
