@@ -38,11 +38,11 @@ public abstract class SocialAnimal extends Animal{
         return true;
     }
 
-    @Override // Make it so setHome() updates home for all members, but this sucks
+    @Override // Make it so setHome() updates home for all members of the pack
     public boolean setHome(Home home) {
         if (home == null) { return false; }
         for (SocialAnimal member : pack_members) {
-            member.setIndividualHome(home); // Very bad
+            member.setIndividualHome(home); 
         }
         return true;
     }
@@ -194,7 +194,7 @@ public abstract class SocialAnimal extends Animal{
      * Uses the super implementation of setHome() to set the home of the individual animal
      * @param home The home to be set
      */
-    public void setIndividualHome(Home home) { // :(
+    public void setIndividualHome(Home home) { 
         super.setHome(home);
     }
 

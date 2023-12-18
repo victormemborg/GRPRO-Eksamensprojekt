@@ -99,7 +99,7 @@ public class Bear extends Animal implements Predator {
 
     @Override
     void moveRandom() {
-        moveTo(Help.getRandomNearbyEmptyTile(world, home.getLocation(), territory.getRadius() + 1)); // Magic number
+        moveTo(Help.getRandomNearbyEmptyTile(world, home.getLocation(), territory.getRadius() + 1)); 
     }
 
     @Override

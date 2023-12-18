@@ -57,7 +57,7 @@ public class Burrow extends Home implements DynamicDisplayInformationProvider, N
         if (occupants.isEmpty()) {
             return new DisplayInformation(Color.black, image);
         }
-        String image_key = occupants.get(0).getHomeImage(); // 
+        String image_key = occupants.get(0).getHomeImage(); 
         return new DisplayInformation(Color.black, image_key);
     }
 }

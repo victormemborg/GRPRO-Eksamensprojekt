@@ -136,10 +136,10 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
      */
     void passiveHpRegen() {
         double energy_ratio = (double) current_energy / max_energy;
-        int healing_factor = max_hp / 20;        // Magic number
+        int healing_factor = max_hp / 20;        
         int heal_amount = (int) Math.round(healing_factor*energy_ratio);
         int actual_increase = increaseHp(heal_amount);
-        decreaseEnergy(actual_increase / 2);     // Another magic number
+        decreaseEnergy(actual_increase / 2);     
     }
 
     /**
@@ -536,7 +536,7 @@ public abstract class Animal implements Actor, DynamicDisplayInformationProvider
             boolean status = setHome(createBurrow());
             return status; // Only bears do not live in a burrow, and their home can never be null
         }
-        if (moveTo(home.getLocation()) == 0 && !dead) { // Annoying waiting frame because act still gets called even though it is dead
+        if (moveTo(home.getLocation()) == 0 && !dead) { // Waiting frame because act still gets called even though it is dead
             sleep();
         }
         return true;

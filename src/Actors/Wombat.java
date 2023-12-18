@@ -77,7 +77,7 @@ public class Wombat extends SocialAnimal {
             return; 
         }
         moveRandom();
-        reproduce(); // In case it has no packmembers it can still reproduce with wolfs from other packs
+        reproduce(); // In case it has no packmembers it can still reproduce with wombats from other packs
     }
 
     @Override
