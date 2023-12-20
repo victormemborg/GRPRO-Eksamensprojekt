@@ -1,0 +1,9 @@
+12
+rabbit 4
+wombat 3
+wombat 2
+wolf 3
+wolf 3
+bear 1
+grass 10-15
+carcass 2-5

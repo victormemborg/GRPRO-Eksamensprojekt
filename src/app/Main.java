@@ -19,14 +19,14 @@ import itumulator.world.World;
 public class Main {
     public static void main(String[] args) {
         try {
-            Program p = createProgramFromFile("data/test.txt", 800, 250);
+            Program p = createProgramFromFile("data/week4.txt", 800, 250);
             p.show();
             p.run();
 
         } catch (FileNotFoundException fnfe) {
-            System.out.println("Check path!");
+            System.out.println("ERROR: Invalid path to file!");
         } catch (Exception e) {
-            System.out.println("Something unexpected happened! Message:" + e.getMessage() + " Class: " + e.getClass());
+            System.out.println("ERROR: Something unexpected happened! Message:" + e.getMessage() + " Class: " + e.getClass());
             System.out.println(e.getCause());
         }
     }
@@ -52,6 +52,9 @@ public class Main {
                 Class<?> class_type = getClassType(line);
                 int amount = getAmount(line);
                 Object[] args = getArgs(line, p);
+
+                //Not mandatory requirement.. just ignore cordyceps input
+                if(line.contains("cordyceps")) {continue;}
                 
                 //Create specified number of instances
                 ArrayList<Object> cluster = new ArrayList<>(); // Used for SocialAnimals
@@ -67,7 +70,7 @@ public class Main {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage() + ", skipping line " + line_counter + " in " + path);
+                System.out.println("ERROR: " + e.getMessage() + ", skipping line " + line_counter + " in " + path);
             }
         }
         scan.close();
@@ -151,7 +154,7 @@ public class Main {
             world.setTile(loc, obj);
             return obj;
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
-            System.out.println(e.getClass() + ", trying to initialize the next object. " + e.getMessage());
+            System.out.println("ERROR: " + e.getMessage() + " (" + e.getClass() + ")");
             return null;
         }
     }
